@@ -34,27 +34,30 @@ def main() -> None:
         # Fill the background with blue
         screen.fill(BLUE)
 
-        # Outer White Circle
-        pygame.draw.circle(screen, WHITE, CENT, BOX//2-RWT)
-
-        # Inner Blue Circle
-        pygame.draw.circle(screen, BLUE, CENT, BOX//2-(RWT*2))
-
-        # Reticle crossing lines
-        pygame.draw.rect(screen, WHITE, HRETL)
-        pygame.draw.rect(screen, WHITE, VRETL)
-
-         # Central Blanking circle
-        pygame.draw.circle(screen, BLUE, CENT, RCNT+RWT)       
-
-        # Central circle
-        pygame.draw.circle(screen, WHITE, CENT, RCNT)
+        draw_reticle(screen)
 
         # Flip the display
         pygame.display.flip()
 
     # Running false, time to quit.
     pygame.quit()
+
+def draw_reticle(scrn):
+    # Outer White Circle
+    pygame.draw.circle(scrn, WHITE, CENT, BOX//2-RWT)
+
+    # Inner Blue Circle
+    pygame.draw.circle(scrn, BLUE, CENT, BOX//2-(RWT*2))
+
+    # Reticle crossing lines
+    pygame.draw.rect(scrn, WHITE, HRETL)
+    pygame.draw.rect(scrn, WHITE, VRETL)
+
+    # Central Blanking circle
+    pygame.draw.circle(scrn, BLUE, CENT, RCNT+RWT)       
+
+    # Central circle
+    pygame.draw.circle(scrn, WHITE, CENT, RCNT)
 
 
 if __name__ == "__main__":
