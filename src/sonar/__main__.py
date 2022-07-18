@@ -6,8 +6,7 @@ pygame.init()
 
 
 BOX = 800 # Size of bounding box
-CENT = (BOX//2, BOX//2)
-print(CENT)
+CENT = (BOX//2, BOX//2) # Center of box
 RWT = 16 # Reticle line weight
 RCNT = 20 # Center circle diameter
 BLUE = (24, 53, 76)
@@ -59,6 +58,13 @@ def draw_reticle(scrn):
     # Central circle
     pygame.draw.circle(scrn, WHITE, CENT, RCNT)
 
+def ping():
+    # create generator, give main loop arc drawing object and sound player
+    pass
+
+def draw_arcs_out(scrn):
+    # establish a generator of positions with angles, each call uses one until gone
+    return iter_left # number of iterations left in generator
 
 if __name__ == "__main__":
     main()
