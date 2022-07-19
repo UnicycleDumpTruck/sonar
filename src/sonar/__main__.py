@@ -12,6 +12,7 @@ PI = math.pi
 BOX = 800  # Size of bounding box
 HBOX = BOX // 2
 CENT = (HBOX, HBOX)  # Center of box
+ABOXL = int(HBOX * 1.25)  # Arc box limit so they leave screen
 RWT = 16  # Reticle line weight
 AWT = 8  # Arc line weight
 RCNT = 20  # Center circle diameter
@@ -74,21 +75,31 @@ def draw_reticle(scrn):
 
 
 class ArcMgr:
-    arc_gen_i = arc_gen = (     # Upper right, green
+    arc_gen_i = (     # Upper right, green
         pygame.Rect(HBOX, HBOX-x, x, x)
-        for x in range(HBOX)
+        for x in range(ABOXL)
     )
-    arc_gen_iv = arc_gen = (    # Upper left, Blue
+    arc_gen_iv = (    # Upper left, Blue
         pygame.Rect(HBOX-x, HBOX-x, x, x)
-        for x in range(HBOX)
+        for x in range(ABOXL)
     )
-    arc_gen_iii = arc_gen = (   # Lower left, black
+    arc_gen_iii = (   # Lower left, black
         pygame.Rect(HBOX-x, HBOX, x, x)
-        for x in range(HBOX)
+        for x in range(ABOXL)
     )
-    arc_gen_ii = arc_gen = (    # Lower right, Red
+    arc_gen_ii = (    # Lower right, Red
         pygame.Rect(HBOX, HBOX, x, x)
-        for x in range(HBOX)
+        for x in range(ABOXL)
+    )
+
+    box_gen_i = (     # Upper right, green
+        pygame.Rect(x, BOX, x, BOX)
+        for x in range(ABOXL)
+    )
+
+    rad_gen_i = (
+        (PI/4-PI/2*r/800, PI/4+PI/2*r/800)
+        for r in range(800)
     )
 
     def __init__(self, scrn):
@@ -101,9 +112,6 @@ class ArcMgr:
         )
 
     def draw_arcs_out(self):
-        # establish a generator of positions with angles, each call uses one until gone
-        # return iter_left # number of iterations left in generator
-
         # t_rect =
         # pygame.draw.rect(self.screen, (0, 0, 255), t_rect)
 
@@ -117,6 +125,9 @@ class ArcMgr:
 
         pygame.draw.arc(self.screen, GREEN, next(
             self.arc_gen_iii), PI, 3*PI/2, AWT)
+
+        pygame.draw.arc(self.screen, RED, next(
+            self.box_gen_i), *next(self.rad_gen_i), AWT)
 
 
 def start_ping():
