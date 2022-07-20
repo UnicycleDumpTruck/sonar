@@ -61,7 +61,7 @@ def main() -> None:
         # Fill the background with blue
         screen.fill(BLUE)
 
-        draw_reticle(screen)
+        # draw_reticle(screen)
         arc_mgr.draw()
 
         pygame.draw.arc(
