@@ -61,15 +61,8 @@ def main() -> None:
         # Fill the background with blue
         screen.fill(BLUE)
 
-        # draw_reticle(screen)
+        draw_reticle(screen)
         arc_mgr.draw()
-
-        pygame.draw.arc(
-            screen, GREEN, [HBOX, 0, HBOX, BOX], 1.75*PI, PI/4, AWT)
-        pygame.draw.arc(
-            screen, GREEN, [HBOX, 0, HBOX/2, BOX], 1.75*PI, PI/4, AWT)
-        pygame.draw.arc(
-            screen, GREEN, [HBOX, 0, HBOX/4, BOX], 1.75*PI, PI/4, AWT)
 
         # Flip the display
         pygame.display.flip()
@@ -106,19 +99,19 @@ class SoundArc:
 class ArcMgr:
     def reset_empty_ping_arcs(self):
         self.arc_gen_i = (     # Upper right
-            (RED, pygame.Rect(HBOX, HBOX-x, x, x), 0, PI/2,)
+            (RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), 0+.2, PI/2-.2)
             for x in range(ABOXL)
         )
         self.arc_gen_iv = (    # Upper left
-            (GREEN, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), PI/2, PI)
+            (RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), PI/2+.2, PI-.2)
             for x in range(ABOXL)
         )
         self.arc_gen_iii = (   # Lower left
-            (RED, pygame.Rect(HBOX-x, HBOX, x, x), PI, 3*PI/2)
+            (RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), PI+.2, 3*PI/2-.2)
             for x in range(ABOXL)
         )
         self.arc_gen_ii = (    # Lower right
-            (GREEN, pygame.Rect(HBOX, HBOX, x, x), 3*PI/2, 2*PI,)
+            (RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), 3*PI/2+.2, 2*PI-.2)
             for x in range(ABOXL)
         )
 
@@ -153,7 +146,7 @@ class ArcMgr:
              arc_details[1][1]+arc_details[1][3]),
             (arc_details[1][0]+arc_details[1][2], arc_details[1][1]),
         ]
-        pygame.draw.lines(self.screen, arc_details[0], True, points, 1)
+        # pygame.draw.lines(self.screen, arc_details[0], True, points, 1)
         pygame.draw.arc(self.screen, *arc_details, AWT)
 
     def draw_arcs_out(self):
@@ -163,8 +156,8 @@ class ArcMgr:
             self.draw_single_arc(self.arc_gen_ii)
             self.draw_single_arc(self.arc_gen_iii)
 
-            self.draw_single_arc(self.arc_gen_right)
-            self.draw_single_arc(self.arc_gen_left)
+            # self.draw_single_arc(self.arc_gen_right)
+            # self.draw_single_arc(self.arc_gen_left)
 
         except StopIteration:
             self.pinging = False
