@@ -25,9 +25,9 @@ PI = math.pi
 BOX = 800  # Size of bounding box
 HBOX = BOX // 2
 CENT = (HBOX, HBOX)  # Center of box
-ABOXL = int(HBOX * 1.25)  # Arc box limit so they leave screen
+ABOXL = int(HBOX * 1.5)  # Arc box limit so they leave screen
 RWT = 2  # Reticle line weight
-AWT = 4  # Arc line weight
+AWT = 8  # Arc line weight
 RCNT = 20  # Center circle diameter
 BLUE = (24, 53, 76)
 RED = (255, 0, 0)
@@ -36,6 +36,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 HRETL = pygame.Rect(RWT, HBOX - RWT/2, BOX-(RWT*2), RWT)
 VRETL = pygame.Rect(HBOX - RWT/2, RWT, RWT, BOX-(RWT*2))
+
+ping = pygame.mixer.Sound("high_ping.wav")
 
 
 def main() -> None:
@@ -100,34 +102,29 @@ class ArcMgr:
     def reset_empty_ping_arcs(self):
         self.arc_gen_i = (     # Upper right
             (RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), 0+.2, PI/2-.2)
-            for x in range(ABOXL)
+            for x in range(0, ABOXL, 4)
         )
         self.arc_gen_iv = (    # Upper left
             (RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), PI/2+.2, PI-.2)
-            for x in range(ABOXL)
+            for x in range(0, ABOXL, 4)
         )
         self.arc_gen_iii = (   # Lower left
             (RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), PI+.2, 3*PI/2-.2)
-            for x in range(ABOXL)
+            for x in range(0, ABOXL, 4)
         )
         self.arc_gen_ii = (    # Lower right
             (RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), 3*PI/2+.2, 2*PI-.2)
-            for x in range(ABOXL)
+            for x in range(0, ABOXL, 4)
         )
 
         self.arc_gen_right = (
-            (BLACK, pygame.Rect(HBOX+x, HBOX-x, x, 2*x), 1.75*PI, PI/4,)
-            for x in range(ABOXL)
+            (BLACK, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), 1.75*PI, PI/4,)
+            for x in range(0, ABOXL, 2)
         )
 
         self.arc_gen_left = (
             (BLACK, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), 0.75*PI, 1.25*PI,)
-            for x in range(ABOXL)
-        )
-
-        self.rad_gen_i = (
-            (PI/4-PI/2*r/800, PI/4+PI/2*r/800)
-            for r in range(800)
+            for x in range(0, ABOXL, 2)
         )
 
     def __init__(self, scrn):
@@ -176,6 +173,7 @@ class ArcMgr:
         else:
             logger.debug("Commencing ping.")
             self.pinging = True
+            pygame.mixer.Sound.play(ping)
 
 
 if __name__ == "__main__":
