@@ -27,8 +27,8 @@ HBOX = BOX // 2
 CENT = (HBOX, HBOX)  # Center of box
 ABOXL = int(HBOX * 1.5)  # Arc box limit so they leave screen
 RWT = 2  # Reticle line weight
-AWT = 4  # Arc line weight
 ARC_SPEED = 4
+AWT = 8  # Arc line weight
 RCNT = 20  # Center circle diameter
 BLUE = (24, 53, 76)
 RED = (255, 0, 0)
@@ -37,6 +37,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 HRETL = pygame.Rect(RWT, HBOX - RWT/2, BOX-(RWT*2), RWT)
 VRETL = pygame.Rect(HBOX - RWT/2, RWT, RWT, BOX-(RWT*2))
+
+ping = pygame.mixer.Sound("high_ping.wav")
 
 
 def main() -> None:
@@ -129,10 +131,6 @@ class ArcMgr:
             for x in range(AWT, ABOXL, ARC_SPEED)
         )
 
-        self.rad_gen_i = (
-            (PI/4-PI/2*r/800, PI/4+PI/2*r/800)
-            for r in range(800)
-        )
 
     def __init__(self, scrn):
         self.screen = scrn
@@ -180,6 +178,7 @@ class ArcMgr:
         else:
             logger.debug("Commencing ping.")
             self.pinging = True
+            pygame.mixer.Sound.play(ping)
 
 
 if __name__ == "__main__":
