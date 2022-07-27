@@ -25,9 +25,10 @@ PI = math.pi
 BOX = 800  # Size of bounding box
 HBOX = BOX // 2
 CENT = (HBOX, HBOX)  # Center of box
-ABOXL = int(HBOX * 1.25)  # Arc box limit so they leave screen
+ABOXL = int(HBOX * 1.5)  # Arc box limit so they leave screen
 RWT = 2  # Reticle line weight
 AWT = 4  # Arc line weight
+ARC_SPEED = 4
 RCNT = 20  # Center circle diameter
 BLUE = (24, 53, 76)
 RED = (255, 0, 0)
@@ -57,6 +58,8 @@ def main() -> None:
             elif event.type == KEYDOWN:
                 if event.key == K_p:
                     arc_mgr.start_ping()
+                if event.key == K_ESCAPE:
+                    running = False
 
         # Fill the background with blue
         screen.fill(BLUE)
@@ -100,29 +103,30 @@ class ArcMgr:
     def reset_empty_ping_arcs(self):
         self.arc_gen_i = (     # Upper right
             (RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), 0+.2, PI/2-.2)
-            for x in range(ABOXL)
+            for x in range(AWT, ABOXL, ARC_SPEED)
         )
         self.arc_gen_iv = (    # Upper left
             (RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), PI/2+.2, PI-.2)
-            for x in range(ABOXL)
+            for x in range(AWT, ABOXL, ARC_SPEED)
         )
         self.arc_gen_iii = (   # Lower left
             (RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), PI+.2, 3*PI/2-.2)
-            for x in range(ABOXL)
+            for x in range(AWT, ABOXL, ARC_SPEED) 
         )
+
         self.arc_gen_ii = (    # Lower right
             (RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), 3*PI/2+.2, 2*PI-.2)
-            for x in range(ABOXL)
+            for x in range(AWT, ABOXL, ARC_SPEED)
         )
 
         self.arc_gen_right = (
             (BLACK, pygame.Rect(HBOX+x, HBOX-x, x, 2*x), 1.75*PI, PI/4,)
-            for x in range(ABOXL)
+            for x in range(AWT, ABOXL, ARC_SPEED)
         )
 
         self.arc_gen_left = (
             (BLACK, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), 0.75*PI, 1.25*PI,)
-            for x in range(ABOXL)
+            for x in range(AWT, ABOXL, ARC_SPEED)
         )
 
         self.rad_gen_i = (
