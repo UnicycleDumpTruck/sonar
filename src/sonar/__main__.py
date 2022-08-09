@@ -28,7 +28,7 @@ pygame.init()
 SCREEN_WIDTH = 1024
 SCREEN_HEIGHT = 768
 PI = math.pi
-BOX = 600  # Size of bounding box
+BOX = 768  # Size of bounding box
 HBOX = BOX // 2
 CENT = (HBOX, HBOX)  # Center of box
 ABOXL = int(HBOX * 1.5)  # Arc box limit so they leave screen
@@ -220,7 +220,7 @@ class ArcMgr:
              arc_details[1][1]+arc_details[1][3]),
             (arc_details[1][0]+arc_details[1][2], arc_details[1][1]),
         ]
-        pygame.draw.lines(self.screen, arc_details[0], True, points, 1)
+        # pygame.draw.lines(self.screen, arc_details[0], True, points, 1)
         pygame.draw.arc(self.screen, *arc_details, AWT)
 
     def draw_arcs_out(self):
