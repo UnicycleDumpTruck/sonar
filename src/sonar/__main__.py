@@ -17,10 +17,12 @@ from pygame.locals import (
     QUIT,
 )
 
+pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
 
 # 0,0 is upper left of screen
-
+SCREEN_WIDTH = 1024
+SCREEN_HEIGHT = 768
 PI = math.pi
 BOX = 800  # Size of bounding box
 HBOX = BOX // 2
@@ -45,8 +47,10 @@ def main() -> None:
     """Sonar."""
 
     # Set up the drawing window
-    screen = pygame.display.set_mode([BOX, BOX])
+    # screen = pygame.display.set_mode([BOX, BOX])
+    screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
     arc_mgr = ArcMgr(screen)
+    pygame.mouse.set_visible(False)
 
     # Run until quit
     running = True
