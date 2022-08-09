@@ -57,16 +57,16 @@ def angle_of_line(x1, y1, x2, y2):
     return angle_of_vector(x2-x1, y2-y1)
 
 
-def get_angle(point_1, point_2):  # These can also be four parameters instead of two arrays
-    angle = atan2(point_1[1] - point_2[1], point_1[0] - point_2[0])
+# def get_angle(point_1, point_2):  # These can also be four parameters instead of two arrays
+#     angle = atan2(point_1[1] - point_2[1], point_1[0] - point_2[0])
 
-    # # Optional
-    # angle = degrees(angle)
+#     # # Optional
+#     # angle = degrees(angle)
 
-    # OR
-    angle = radians(angle)
-    logger.debug(angle)
-    return angle
+#     # OR
+#     angle = radians(angle)
+#     logger.debug(angle)
+#     return angle
 
 
 def main() -> None:
