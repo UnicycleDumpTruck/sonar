@@ -159,11 +159,11 @@ class ArcMgr:
     def arc_to_center_from_xy(self, start_x, start_y):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
-        # angle = get_angle((HBOX, HBOX), (start_x, start_y))
-        angle = angle_of_line(start_x, start_y, HBOX, HBOX)
-        arc_start = radians(angle - (3*PI))
-        arc_end = radians(angle + (3*PI))
-        logger.debug(f"arc_start:{arc_start} arc_end:{arc_end}")
+        angle = angle_of_line(start_x, start_y, HBOX, HBOX) # comes back in degrees
+        # logger.debug(f"Angle: {angle}")
+        arc_start =  radians(angle - 45) # convert to rads for pygame arc
+        arc_end = radians(angle + 45)    # confert to rads for pygame arc
+        # logger.debug(f"arc_start:{arc_start} arc_end:{arc_end}")
         self.arcs.append(     # Upper right
             ((RED, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), arc_start, arc_end)
              for x in range(AWT, ABOXL, ARC_SPEED))
