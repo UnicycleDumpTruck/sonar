@@ -153,6 +153,7 @@ class Arc():
         self.rect = rect
         self.start = start
         self.end = end
+        self.radius = self.rect.width // 2
 
     def iterable(self):
         return (self.color, self.rect, self.start, self.end)
@@ -178,6 +179,7 @@ class Contact(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect()
         self.rect.centerx = x
         self.rect.centery = y
+        self.radius = self.rect.width // 2
         self.detected = False
         self.image = pygame.image.load('question.png')
 class ArcMgr:
@@ -245,10 +247,12 @@ class ArcMgr:
             pygame.draw.arc(self.screen, *arc_details.iterable(), AWT)
 
         if not arc_gen.echo:
-            if con := pygame.sprite.spritecollideany(arc_details, self.contacts):
+            # if con := pygame.sprite.spritecollideany(arc_details, self.contacts):
+            collide = pygame.sprite.spritecollide(arc_details, self.contacts, False, pygame.sprite.collide_circle)
+            for con in collide:
                 print(arc_gen.contacts)
                 if con not in arc_gen.contacts:
-                    self.arcs.extend(self.arc_to_center_from_xy(con.rect.x, con.rect.y, GREEN))
+                    self.arcs.extend(self.arc_to_center_from_xy(con.rect.centerx, con.rect.centery, GREEN))
                     arc_gen.contacts.append(con)
                     print(arc_gen, arc_gen.contacts)
                 
