@@ -4,6 +4,7 @@ from random import randint
 from math import atan2, degrees, radians
 import math
 from time import sleep
+from itertools import chain
 
 from loguru import logger
 
@@ -15,6 +16,7 @@ from pygame.locals import (
     K_g,
     K_b,
     K_e,
+    K_v,
     K_UP,
     K_DOWN,
     K_LEFT,
@@ -97,7 +99,9 @@ def main() -> None:
                 if event.key == K_e:
                     rand_x = randint(0, BOX)
                     rand_y = randint(0, BOX)
-                    arc_mgr.arc_to_center_from_xy(rand_x, rand_y, GREEN)
+                    arc_mgr.arcs.extend(arc_mgr.arc_to_center_from_xy(rand_x, rand_y, GREEN))
+                if event.key == K_v:
+                    arc_mgr.arcs.extend(arc_mgr.arc_upper_left_bounced())
                 if event.key == K_ESCAPE:
                     running = False
 
@@ -135,25 +139,32 @@ def draw_reticle(scrn):
 
 
 class ArcMgr:
+    def arc_to_and_back_xy(self, start_x=HBOX, start_y=HBOX, end_x=ABOXL, end_y=ABOXL, color=GREEN):
+        return chain(self.arcs_from_xy(color=RED), 
+            *self.arc_to_center_from_xy(HBOX*1.5, HBOX*1.5, color=RED))
+
+    def arc_upper_left_bounced(self):
+        return [
+            chain(
+                ((RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), PI+.2, 3*PI/2-.2)
+                    for x in range(AWT, ABOXL, ARC_SPEED)),
+            *self.arc_to_center_from_xy(0,BOX,RED),
+            )
+        ]
+
     def arcs_from_xy(self, start_x=HBOX, start_y=HBOX, color=RED):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
-        self.arcs.append(     # Upper right
+        return [     # Upper right
             ((color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), 0+.2, PI/2-.2)
-             for x in range(AWT, ABOXL, ARC_SPEED))
-        )
-        self.arcs.append(    # Upper left
+                for x in range(AWT, ABOXL, ARC_SPEED)),
             ((color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), PI/2+.2, PI-.2)
-             for x in range(AWT, ABOXL, ARC_SPEED))
-        )
-        self.arcs.append(   # Lower left
+                for x in range(AWT, ABOXL, ARC_SPEED)),
             ((color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), PI+.2, 3*PI/2-.2)
-             for x in range(AWT, ABOXL, ARC_SPEED))
-        )
-        self.arcs.append(    # Lower right
+                for x in range(AWT, ABOXL, ARC_SPEED)),
             ((color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), 3*PI/2+.2, 2*PI-.2)
-             for x in range(AWT, ABOXL, ARC_SPEED))
-        )
+                for x in range(AWT, ABOXL, ARC_SPEED)),
+        ]
 
     def arc_to_center_from_xy(self, start_x, start_y, color):
         x_offset = start_x - HBOX
@@ -162,10 +173,12 @@ class ArcMgr:
         # logger.debug(f"Angle: {angle}")
         arc_start =  radians(angle - 45) # convert to rads for pygame arc
         arc_end = radians(angle + 45)    # confert to rads for pygame arc
-        self.arcs.append(     # Upper right
+        #self.arcs.append(     # Upper right
+        return [
             ((color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), arc_start, arc_end)
-             for x in range(AWT, ABOXL, ARC_SPEED))
-        )
+                for x in range(AWT, ABOXL, ARC_SPEED)),
+        ]
+        #)
 
     def __init__(self, scrn):
         self.screen = scrn
@@ -183,7 +196,7 @@ class ArcMgr:
             (arc_details[1][0]+arc_details[1][2], arc_details[1][1]),
         ]
         ## Outline arcs with boxes:
-        # pygame.draw.lines(self.screen, arc_details[0], True, points, 1)
+        pygame.draw.lines(self.screen, arc_details[0], True, points, 1)
         pygame.draw.arc(self.screen, *arc_details, AWT)
 
     def draw(self):
@@ -204,7 +217,7 @@ class ArcMgr:
             logger.debug("Commencing ping.")
             self.pinging = True
             pygame.mixer.Sound.play(sound)
-            self.arcs_from_xy(HBOX, HBOX, color)
+            self.arcs.extend(self.arcs_from_xy(HBOX, HBOX, color))
 
 
 if __name__ == "__main__":
