@@ -17,6 +17,7 @@ from pygame.locals import (
     K_b,
     K_e,
     K_v,
+    K_w,
     K_UP,
     K_DOWN,
     K_LEFT,
@@ -38,7 +39,7 @@ PI = math.pi
 BOX = 768  # Size of bounding box
 HBOX = BOX // 2
 CENT = (HBOX, HBOX)  # Center of box
-ABOXL = int(HBOX * 1.5)  # Arc box limit so they leave screen
+ABOXL = int(HBOX * 1)  # Arc box limit so they leave screen
 RWT = 2  # Reticle line weight
 ARC_SPEED = 4
 AWT = 8  # Arc line weight
@@ -78,7 +79,6 @@ def main() -> None:
     screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
     arc_mgr = ArcMgr(screen)
     pygame.mouse.set_visible(False)
-
     # Run until quit
     running = True
 
@@ -102,6 +102,10 @@ def main() -> None:
                     arc_mgr.arcs.extend(arc_mgr.arc_to_center_from_xy(rand_x, rand_y, GREEN))
                 if event.key == K_v:
                     arc_mgr.arcs.extend(arc_mgr.arc_upper_left_bounced())
+                if event.key == K_w:
+                    arc_mgr.contacts.append(Contact(112, 655))
+
+
                 if event.key == K_ESCAPE:
                     running = False
 
@@ -138,17 +142,28 @@ def draw_reticle(scrn):
     pygame.draw.circle(scrn, WHITE, CENT, RCNT)
 
 
+class Contact(pygame.sprite.Sprite):
+    """Sonar contact."""
+    def __init__(self, x, y):
+        """Initialize."""
+        super().__init__()
+        self.surf = pygame.Surface((75,75))
+        self.surf.fill(WHITE)
+        self.rect = self.surf.get_rect()
+        self.rect.x = x
+        self.rect.y = y
 class ArcMgr:
     def arc_to_and_back_xy(self, start_x=HBOX, start_y=HBOX, end_x=ABOXL, end_y=ABOXL, color=GREEN):
         return chain(self.arcs_from_xy(color=RED), 
-            *self.arc_to_center_from_xy(HBOX*1.5, HBOX*1.5, color=RED))
+            *self.arc_to_center_from_xy(112, 655, color=RED))
 
     def arc_upper_left_bounced(self):
         return [
             chain(
                 ((RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), PI+.2, 3*PI/2-.2)
-                    for x in range(AWT, ABOXL, ARC_SPEED)),
-            *self.arc_to_center_from_xy(0,BOX,RED),
+                    for x in range(AWT, 150, ARC_SPEED)),
+            [Contact(150, 617)],
+            *self.arc_to_center_from_xy(150,617,RED),
             )
         ]
 
@@ -185,19 +200,26 @@ class ArcMgr:
         self.pinging = False
         self.biosound = False
         self.arcs = []
+        self.contacts = []
 
     def draw_single_arc(self, arc_gen):
         arc_details = next(arc_gen)
-        points = [
-            (arc_details[1][0], arc_details[1][1]),
-            (arc_details[1][0], arc_details[1][1]+arc_details[1][3]),
-            (arc_details[1][0]+arc_details[1][2],
-             arc_details[1][1]+arc_details[1][3]),
-            (arc_details[1][0]+arc_details[1][2], arc_details[1][1]),
-        ]
-        ## Outline arcs with boxes:
-        pygame.draw.lines(self.screen, arc_details[0], True, points, 1)
-        pygame.draw.arc(self.screen, *arc_details, AWT)
+        if isinstance(arc_details, Contact):
+            self.contacts.append(arc_details)
+        else:
+            points = [
+                (arc_details[1][0], arc_details[1][1]),
+                (arc_details[1][0], arc_details[1][1]+arc_details[1][3]),
+                (arc_details[1][0]+arc_details[1][2],
+                arc_details[1][1]+arc_details[1][3]),
+                (arc_details[1][0]+arc_details[1][2], arc_details[1][1]),
+            ]
+            ## Outline arcs with boxes:
+            pygame.draw.lines(self.screen, arc_details[0], True, points, 1)
+            pygame.draw.arc(self.screen, *arc_details, AWT)
+
+        if con := pygame.sprite.spritecollideany(arc_details[1], self.contacts):
+            self.arcs.append(self.arc_to_center_from_xy(con.x, con.y))
 
     def draw(self):
         if self.arcs:
@@ -208,6 +230,9 @@ class ArcMgr:
                     self.arcs.remove(arc)
         else:
             self.pinging = False
+        for con in self.contacts:
+            self.screen.blit(con.surf, con.rect)
+
 
     def start_ping(self, color=RED, sound=ping):
         if self.pinging and EXCLUSIVE_PING:
