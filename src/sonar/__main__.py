@@ -1,34 +1,36 @@
 """Command-line interface."""
-
-from random import randint
-from math import atan2, degrees, radians
 import math
-from time import sleep
+from enum import Enum
+from enum import auto
 from itertools import chain
-
-from loguru import logger
-
-from rich.traceback import install
-install(show_locals=True)
+from math import atan2
+from math import degrees
+from math import radians
+from random import randint
+from time import sleep
 
 import pygame
-from pygame.locals import (
-    K_p,
-    K_o,
-    K_r,
-    K_g,
-    K_b,
-    K_e,
-    K_v,
-    K_w,
-    K_UP,
-    K_DOWN,
-    K_LEFT,
-    K_RIGHT,
-    K_ESCAPE,
-    KEYDOWN,
-    QUIT,
-)
+from loguru import logger
+from pygame.locals import K_DOWN
+from pygame.locals import K_ESCAPE
+from pygame.locals import K_LEFT
+from pygame.locals import K_RIGHT
+from pygame.locals import K_UP
+from pygame.locals import KEYDOWN
+from pygame.locals import QUIT
+from pygame.locals import K_b
+from pygame.locals import K_e
+from pygame.locals import K_g
+from pygame.locals import K_o
+from pygame.locals import K_p
+from pygame.locals import K_r
+from pygame.locals import K_v
+from pygame.locals import K_w
+from rich.traceback import install
+
+
+install(show_locals=True)
+
 
 pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
@@ -53,8 +55,8 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-HRETL = pygame.Rect(RWT, HBOX - RWT/2, BOX-(RWT*2), RWT)
-VRETL = pygame.Rect(HBOX - RWT/2, RWT, RWT, BOX-(RWT*2))
+HRETL = pygame.Rect(RWT, HBOX - RWT / 2, BOX - (RWT * 2), RWT)
+VRETL = pygame.Rect(HBOX - RWT / 2, RWT, RWT, BOX - (RWT * 2))
 
 ping = pygame.mixer.Sound("high_ping.wav")
 r_ping = pygame.mixer.Sound("high_ping.wav")
@@ -71,7 +73,7 @@ def angle_of_vector(x, y):
 def angle_of_line(x1, y1, x2, y2):
     # return math.degrees(math.atan2(-y1-y2, x2-x1))    # 1: math.atan
     # 2: pygame.math.Vector2.angle_to
-    return angle_of_vector(x2-x1, y2-y1)
+    return angle_of_vector(x2 - x1, y2 - y1)
 
 
 def main() -> None:
@@ -102,12 +104,13 @@ def main() -> None:
                 if event.key == K_e:
                     rand_x = randint(0, BOX)
                     rand_y = randint(0, BOX)
-                    arc_mgr.arcs.extend(arc_mgr.arc_to_center_from_xy(rand_x, rand_y, GREEN))
+                    arc_mgr.arcs.extend(
+                        arc_mgr.arc_to_center_from_xy(rand_x, rand_y, GREEN)
+                    )
                 if event.key == K_v:
                     arc_mgr.arcs.extend(arc_mgr.arc_lower_right_bounced())
                 if event.key == K_w:
                     arc_mgr.contacts.append(Contact(112, 655))
-
 
                 if event.key == K_ESCAPE:
                     running = False
@@ -129,24 +132,25 @@ def main() -> None:
 
 def draw_reticle(scrn):
     # Outer White Circle
-    pygame.draw.circle(scrn, WHITE, CENT, BOX//2-RWT)
+    pygame.draw.circle(scrn, WHITE, CENT, BOX // 2 - RWT)
 
     # Inner Blue Circle
-    pygame.draw.circle(scrn, BG_BLUE, CENT, BOX//2-(RWT*2))
+    pygame.draw.circle(scrn, BG_BLUE, CENT, BOX // 2 - (RWT * 2))
 
     # Reticle crossing lines
     pygame.draw.rect(scrn, WHITE, HRETL)
     pygame.draw.rect(scrn, WHITE, VRETL)
 
     # Central Blanking circle
-    pygame.draw.circle(scrn, BG_BLUE, CENT, RCNT+RWT)
+    pygame.draw.circle(scrn, BG_BLUE, CENT, RCNT + RWT)
 
     # Central circle
     pygame.draw.circle(scrn, WHITE, CENT, RCNT)
 
 
-class Arc():
+class Arc:
     """Information to draw a single arc."""
+
     def __init__(self, color, rect, start, end):
         """Initialize."""
         self.color = color
@@ -159,68 +163,134 @@ class Arc():
         return (self.color, self.rect, self.start, self.end)
 
 
-class ArcGen():
+class ArcGen:
     def __init__(self, generator, echo=False):
         self.contacts = []
         self.generator = generator
-        self.echo = echo 
+        self.echo = echo
+
     def __iter__(self):
         return self
+
     def __next__(self):
         return next(self.generator)
 
+
+class ContactType(Enum):
+    UNK = auto()
+    SUB = auto()
+    SHIP = auto()
+    WHALE = auto()
+    DOLPHIN = auto()
+
+
 class Contact(pygame.sprite.Sprite):
     """Sonar contact."""
+
     def __init__(self, x, y):
         """Initialize."""
         super().__init__()
-        self.surf = pygame.Surface((75,75))
+        self.surf = pygame.Surface((75, 75))
         self.surf.fill(WHITE)
         self.rect = self.surf.get_rect()
         self.rect.centerx = x
         self.rect.centery = y
         self.radius = self.rect.width // 2
         self.detected = False
-        self.image = pygame.image.load('question.png')
+        self.image = pygame.image.load("question.png")
+        self.type = ContactType.UNK
+
+
 class ArcMgr:
-    def arc_to_and_back_xy(self, start_x=HBOX, start_y=HBOX, end_x=ABOXL, end_y=ABOXL, color=GREEN):
-        return chain(self.arcs_from_xy(color=RED), 
-            *self.arc_to_center_from_xy(112, 655, color=RED))
 
     def arc_lower_right_bounced(self):
-        return [ArcGen(
+        return [
+            ArcGen(
                 chain(
-                    ArcGen(Arc(RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), PI+.2, 3*PI/2-.2)
-                        for x in range(AWT, 150, ARC_SPEED)),
-                (Contact(150, 617) for _ in range(1)),
-                *self.arc_to_center_from_xy(150,617,RED),
+                    ArcGen(
+                        Arc(
+                            RED,
+                            pygame.Rect(HBOX - x, HBOX - x, 2 * x, 2 * x),
+                            PI + 0.2,
+                            3 * PI / 2 - 0.2,
+                        )
+                        for x in range(AWT, 150, ARC_SPEED)
+                    ),
+                    (Contact(150, 617) for _ in range(1)),
+                    *self.arc_to_center_from_xy(150, 617, RED),
                 )
-            )]
+            )
+        ]
 
     def arcs_from_xy(self, start_x=HBOX, start_y=HBOX, color=RED):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
-        return [     # Upper right
-            ArcGen(Arc(color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), 0+.2, PI/2-.2)
-                for x in range(AWT, ABOXL, ARC_SPEED)),
-            ArcGen(Arc(color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), PI/2+.2, PI-.2)
-                for x in range(AWT, ABOXL, ARC_SPEED)),
-            ArcGen(Arc(color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), PI+.2, 3*PI/2-.2)
-                for x in range(AWT, ABOXL, ARC_SPEED)),
-            ArcGen(Arc(color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), 3*PI/2+.2, 2*PI-.2)
-                for x in range(AWT, ABOXL, ARC_SPEED)),
+        return [  # Upper right
+            ArcGen(
+                Arc(
+                    color,
+                    pygame.Rect(HBOX - x + x_offset, HBOX - \
+                                x + y_offset, 2 * x, 2 * x),
+                    0 + 0.2,
+                    PI / 2 - 0.2,
+                )
+                for x in range(AWT, ABOXL, ARC_SPEED)
+            ),
+            ArcGen(
+                Arc(
+                    color,
+                    pygame.Rect(HBOX - x + x_offset, HBOX - \
+                                x + y_offset, 2 * x, 2 * x),
+                    PI / 2 + 0.2,
+                    PI - 0.2,
+                )
+                for x in range(AWT, ABOXL, ARC_SPEED)
+            ),
+            ArcGen(
+                Arc(
+                    color,
+                    pygame.Rect(HBOX - x + x_offset, HBOX - \
+                                x + y_offset, 2 * x, 2 * x),
+                    PI + 0.2,
+                    3 * PI / 2 - 0.2,
+                )
+                for x in range(AWT, ABOXL, ARC_SPEED)
+            ),
+            ArcGen(
+                Arc(
+                    color,
+                    pygame.Rect(HBOX - x + x_offset, HBOX - \
+                                x + y_offset, 2 * x, 2 * x),
+                    3 * PI / 2 + 0.2,
+                    2 * PI - 0.2,
+                )
+                for x in range(AWT, ABOXL, ARC_SPEED)
+            ),
         ]
 
     def arc_to_center_from_xy(self, start_x, start_y, color):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
-        angle = angle_of_line(start_x, start_y, HBOX, HBOX) # comes back in degrees
+        angle = angle_of_line(start_x, start_y, HBOX,
+                              HBOX)  # comes back in degrees
         # logger.debug(f"Angle: {angle}")
-        arc_start =  radians(angle - 45) # convert to rads for pygame arc
-        arc_end = radians(angle + 45)    # confert to rads for pygame arc
+        arc_start = radians(angle - 45)  # convert to rads for pygame arc
+        arc_end = radians(angle + 45)  # confert to rads for pygame arc
         return [
-            ArcGen((Arc(color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), arc_start, arc_end)
-                for x in range(AWT, ABOXL, ARC_SPEED)), echo=True),
+            ArcGen(
+                (
+                    Arc(
+                        color,
+                        pygame.Rect(
+                            HBOX - x + x_offset, HBOX - x + y_offset, 2 * x, 2 * x
+                        ),
+                        arc_start,
+                        arc_end,
+                    )
+                    for x in range(AWT, ABOXL, ARC_SPEED)
+                ),
+                echo=True,
+            ),
         ]
 
     def __init__(self, scrn):
@@ -237,25 +307,35 @@ class ArcMgr:
         else:
             points = [
                 (arc_details.rect[0], arc_details.rect[1]),
-                (arc_details.rect[0], arc_details.rect[1]+arc_details.rect[3]),
-                (arc_details.rect[0]+arc_details.rect[2],
-                arc_details.rect[1]+arc_details.rect[3]),
-                (arc_details.rect[0]+arc_details.rect[2], arc_details.rect[1]),
+                (arc_details.rect[0],
+                 arc_details.rect[1] + arc_details.rect[3]),
+                (
+                    arc_details.rect[0] + arc_details.rect[2],
+                    arc_details.rect[1] + arc_details.rect[3],
+                ),
+                (arc_details.rect[0] +
+                 arc_details.rect[2], arc_details.rect[1]),
             ]
-            ## Outline arcs with boxes:
-            pygame.draw.lines(self.screen, arc_details.color, True, points, 1)
+            # Outline arcs with boxes:
+            # pygame.draw.lines(self.screen, arc_details.color, True, points, 1)
+
             pygame.draw.arc(self.screen, *arc_details.iterable(), AWT)
 
         if not arc_gen.echo:
             # if con := pygame.sprite.spritecollideany(arc_details, self.contacts):
-            collide = pygame.sprite.spritecollide(arc_details, self.contacts, False, pygame.sprite.collide_circle)
+            collide = pygame.sprite.spritecollide(
+                arc_details, self.contacts, False, pygame.sprite.collide_circle
+            )
             for con in collide:
                 print(arc_gen.contacts)
                 if con not in arc_gen.contacts:
-                    self.arcs.extend(self.arc_to_center_from_xy(con.rect.centerx, con.rect.centery, GREEN))
+                    self.arcs.extend(
+                        self.arc_to_center_from_xy(
+                            con.rect.centerx, con.rect.centery, GREEN
+                        )
+                    )
                     arc_gen.contacts.append(con)
                     print(arc_gen, arc_gen.contacts)
-                
 
     def draw(self):
         if self.arcs:
@@ -267,9 +347,10 @@ class ArcMgr:
         else:
             self.pinging = False
         for con in self.contacts:
-            #con.rect.center = con.rect.topleft
-            self.screen.blit(con.image, con.rect.topleft)
-
+            # con.rect.center = con.rect.topleft
+            self.screen.blit(con.image, con.rect)
+            # pygame.draw.rect(self.screen, RED, pygame.Rect(
+            #     con.rect.left, con.rect.top, con.rect.width, con.rect.height), 2)
 
     def start_ping(self, color=RED, sound=ping):
         if self.pinging and EXCLUSIVE_PING:
