@@ -24,6 +24,7 @@ from pygame.locals import K_g
 from pygame.locals import K_o
 from pygame.locals import K_p
 from pygame.locals import K_r
+from pygame.locals import K_t
 from pygame.locals import K_v
 from pygame.locals import K_w
 from rich.traceback import install
@@ -108,6 +109,13 @@ def main() -> None:
                     arc_mgr.arcs.extend(
                         arc_mgr.arc_to_center_from_xy(rand_x, rand_y, GREEN)
                     )
+                if event.key == K_t:
+                    angle = randint(0,359)
+                    radius = randint(100,HBOX)
+                    x = (radius * math.cos(angle) + HBOX)
+                    y = (radius * math.sin(angle) + HBOX)
+                    logger.debug(f"Random contact at {x,y}")
+                    arc_mgr.contacts.append(Contact(x,y))
                 if event.key == K_v:
                     arc_mgr.contacts.append(Contact(150, 617))
                     # arc_mgr.arcs.extend(arc_mgr.arc_lower_right_bounced())
@@ -213,24 +221,24 @@ class ArcMgr:
         self.arcs = []
         self.contacts = []
 
-    def arc_lower_right_bounced(self):
-        return [
-            ArcGen(
-                chain(
-                    ArcGen(
-                        Arc(
-                            RED,
-                            pygame.Rect(HBOX - x, HBOX - x, 2 * x, 2 * x),
-                            PI + 0.2,
-                            3 * PI / 2 - 0.2,
-                        )
-                        for x in range(AWT, 150, ARC_SPEED)
-                    ),
-                    (Contact(150, 617) for _ in range(1)),
-                    *self.arc_to_center_from_xy(150, 617, RED),
-                )
-            )
-        ]
+    # def arc_lower_right_bounced(self):
+    #     return [
+    #         ArcGen(
+    #             chain(
+    #                 ArcGen(
+    #                     Arc(
+    #                         RED,
+    #                         pygame.Rect(HBOX - x, HBOX - x, 2 * x, 2 * x),
+    #                         PI + 0.2,
+    #                         3 * PI / 2 - 0.2,
+    #                     )
+    #                     for x in range(AWT, 150, ARC_SPEED)
+    #                 ),
+    #                 (Contact(150, 617) for _ in range(1)),
+    #                 *self.arc_to_center_from_xy(150, 617, RED),
+    #             )
+    #         )
+    #     ]
 
     def arcs_from_xy(self, start_x=HBOX, start_y=HBOX, color=RED):
         x_offset = start_x - HBOX
