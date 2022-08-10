@@ -1,5 +1,6 @@
 """Command-line interface."""
 import math
+import time
 from enum import Enum
 from enum import auto
 from itertools import chain
@@ -7,7 +8,6 @@ from math import atan2
 from math import degrees
 from math import radians
 from random import randint
-from time import sleep
 
 import pygame
 from loguru import logger
@@ -134,7 +134,7 @@ def main() -> None:
         # Flip the display
         pygame.display.flip()
 
-        sleep(0.01)
+        time.sleep(0.01)
 
     # Running false, time to quit.
     pygame.quit()
@@ -172,12 +172,18 @@ class Arc:
     def iterable(self):
         return (self.color, self.rect, self.start, self.end)
 
+class ArcType(Enum):
+    PING = auto()
+    PING_ECHO = auto()
+    BIO = auto()
+    BIO_ECHO = auto()
+
 
 class ArcGen:
-    def __init__(self, generator, echo=False):
+    def __init__(self, generator, arc_type):
         self.contacts = []
         self.generator = generator
-        self.echo = echo
+        self.arc_type = arc_type
 
     def __iter__(self):
         return self
@@ -211,6 +217,8 @@ class Contact(pygame.sprite.Sprite):
         self.image = pygame.image.load("question.png")
         self.type = ContactType.UNK
         self.alpha = 255
+        self.last_activity = time.monotonic()
+        self.max_age = 60
 
 
 class ArcMgr:
@@ -221,72 +229,57 @@ class ArcMgr:
         self.arcs = []
         self.contacts = []
 
-    # def arc_lower_right_bounced(self):
-    #     return [
-    #         ArcGen(
-    #             chain(
-    #                 ArcGen(
-    #                     Arc(
-    #                         RED,
-    #                         pygame.Rect(HBOX - x, HBOX - x, 2 * x, 2 * x),
-    #                         PI + 0.2,
-    #                         3 * PI / 2 - 0.2,
-    #                     )
-    #                     for x in range(AWT, 150, ARC_SPEED)
-    #                 ),
-    #                 (Contact(150, 617) for _ in range(1)),
-    #                 *self.arc_to_center_from_xy(150, 617, RED),
-    #             )
-    #         )
-    #     ]
-
-    def arcs_from_xy(self, start_x=HBOX, start_y=HBOX, color=RED):
+    def arcs_from_xy(self, start_x=HBOX, start_y=HBOX, color=RED, arc_type=ArcType.PING):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
         return [  # Upper right
             ArcGen(
-                Arc(
+                (Arc(
                     color,
                     pygame.Rect(HBOX - x + x_offset, HBOX - \
                                 x + y_offset, 2 * x, 2 * x),
                     0 + 0.2,
                     PI / 2 - 0.2,
                 )
-                for x in range(AWT, ABOXL, ARC_SPEED)
+                for x in range(AWT, ABOXL, ARC_SPEED)),
+                arc_type
             ),
             ArcGen(
-                Arc(
+                (Arc(
                     color,
                     pygame.Rect(HBOX - x + x_offset, HBOX - \
                                 x + y_offset, 2 * x, 2 * x),
                     PI / 2 + 0.2,
                     PI - 0.2,
                 )
-                for x in range(AWT, ABOXL, ARC_SPEED)
+                for x in range(AWT, ABOXL, ARC_SPEED)),
+                arc_type
             ),
             ArcGen(
-                Arc(
+                (Arc(
                     color,
                     pygame.Rect(HBOX - x + x_offset, HBOX - \
                                 x + y_offset, 2 * x, 2 * x),
                     PI + 0.2,
                     3 * PI / 2 - 0.2,
                 )
-                for x in range(AWT, ABOXL, ARC_SPEED)
+                for x in range(AWT, ABOXL, ARC_SPEED)),
+                arc_type
             ),
             ArcGen(
-                Arc(
+                (Arc(
                     color,
                     pygame.Rect(HBOX - x + x_offset, HBOX - \
                                 x + y_offset, 2 * x, 2 * x),
                     3 * PI / 2 + 0.2,
                     2 * PI - 0.2,
                 )
-                for x in range(AWT, ABOXL, ARC_SPEED)
+                for x in range(AWT, ABOXL, ARC_SPEED)),
+                arc_type
             ),
         ]
 
-    def arc_to_center_from_xy(self, start_x, start_y, color):
+    def arc_to_center_from_xy(self, start_x, start_y, color, arc_type):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
         angle = angle_of_line(start_x, start_y, HBOX,
@@ -307,7 +300,7 @@ class ArcMgr:
                     )
                     for x in range(AWT, ABOXL, ARC_SPEED)
                 ),
-                echo=True,
+                arc_type=arc_type,
             ),
         ]
 
@@ -333,7 +326,7 @@ class ArcMgr:
 
             pygame.draw.arc(self.screen, *arc_details.iterable(), AWT)
 
-        if not arc_gen.echo:
+        if arc_gen.arc_type in {ArcType.PING}:
             collide = pygame.sprite.spritecollide(
                 arc_details, self.contacts, False, pygame.sprite.collide_circle
             )
@@ -342,7 +335,7 @@ class ArcMgr:
                 if con not in arc_gen.contacts:
                     self.arcs.extend(
                         self.arc_to_center_from_xy(
-                            con.rect.centerx, con.rect.centery, GREEN
+                            con.rect.centerx, con.rect.centery, arc_details.color, ArcType.PING_ECHO
                         )
                     )
                     arc_gen.contacts.append(con)
@@ -359,6 +352,8 @@ class ArcMgr:
         else:
             self.pinging = False
         for con in self.contacts:
+            if time.monotonic() - con.last_activity > con.max_age:
+                self.contacts.remove(con)
             if con.detected:
                 self.screen.blit(con.image, con.rect)
                 con.alpha -= 0.5
@@ -378,7 +373,7 @@ class ArcMgr:
             logger.debug("Commencing ping.")
             self.pinging = True
             pygame.mixer.Sound.play(sound)
-            self.arcs.extend(self.arcs_from_xy(HBOX, HBOX, color))
+            self.arcs.extend(self.arcs_from_xy(HBOX, HBOX, color, ArcType.PING))
 
 
 if __name__ == "__main__":
