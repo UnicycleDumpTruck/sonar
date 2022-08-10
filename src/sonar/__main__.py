@@ -8,6 +8,9 @@ from itertools import chain
 
 from loguru import logger
 
+from rich.traceback import install
+install(show_locals=True)
+
 import pygame
 from pygame.locals import (
     K_p,
@@ -101,7 +104,7 @@ def main() -> None:
                     rand_y = randint(0, BOX)
                     arc_mgr.arcs.extend(arc_mgr.arc_to_center_from_xy(rand_x, rand_y, GREEN))
                 if event.key == K_v:
-                    arc_mgr.arcs.extend(arc_mgr.arc_upper_left_bounced())
+                    arc_mgr.arcs.extend(arc_mgr.arc_lower_right_bounced())
                 if event.key == K_w:
                     arc_mgr.contacts.append(Contact(112, 655))
 
@@ -142,6 +145,29 @@ def draw_reticle(scrn):
     pygame.draw.circle(scrn, WHITE, CENT, RCNT)
 
 
+class Arc():
+    """Information to draw a single arc."""
+    def __init__(self, color, rect, start, end):
+        """Initialize."""
+        self.color = color
+        self.rect = rect
+        self.start = start
+        self.end = end
+
+    def iterable(self):
+        return (self.color, self.rect, self.start, self.end)
+
+
+class ArcGen():
+    def __init__(self, generator, echo=False):
+        self.contacts = []
+        self.generator = generator
+        self.echo = echo 
+    def __iter__(self):
+        return self
+    def __next__(self):
+        return next(self.generator)
+
 class Contact(pygame.sprite.Sprite):
     """Sonar contact."""
     def __init__(self, x, y):
@@ -150,34 +176,36 @@ class Contact(pygame.sprite.Sprite):
         self.surf = pygame.Surface((75,75))
         self.surf.fill(WHITE)
         self.rect = self.surf.get_rect()
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.centerx = x
+        self.rect.centery = y
+        self.detected = False
+        self.image = pygame.image.load('question.png')
 class ArcMgr:
     def arc_to_and_back_xy(self, start_x=HBOX, start_y=HBOX, end_x=ABOXL, end_y=ABOXL, color=GREEN):
         return chain(self.arcs_from_xy(color=RED), 
             *self.arc_to_center_from_xy(112, 655, color=RED))
 
-    def arc_upper_left_bounced(self):
-        return [
-            chain(
-                ((RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), PI+.2, 3*PI/2-.2)
-                    for x in range(AWT, 150, ARC_SPEED)),
-            [Contact(150, 617)],
-            *self.arc_to_center_from_xy(150,617,RED),
-            )
-        ]
+    def arc_lower_right_bounced(self):
+        return [ArcGen(
+                chain(
+                    ArcGen(Arc(RED, pygame.Rect(HBOX-x, HBOX-x, 2*x, 2*x), PI+.2, 3*PI/2-.2)
+                        for x in range(AWT, 150, ARC_SPEED)),
+                (Contact(150, 617) for _ in range(1)),
+                *self.arc_to_center_from_xy(150,617,RED),
+                )
+            )]
 
     def arcs_from_xy(self, start_x=HBOX, start_y=HBOX, color=RED):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
         return [     # Upper right
-            ((color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), 0+.2, PI/2-.2)
+            ArcGen(Arc(color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), 0+.2, PI/2-.2)
                 for x in range(AWT, ABOXL, ARC_SPEED)),
-            ((color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), PI/2+.2, PI-.2)
+            ArcGen(Arc(color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), PI/2+.2, PI-.2)
                 for x in range(AWT, ABOXL, ARC_SPEED)),
-            ((color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), PI+.2, 3*PI/2-.2)
+            ArcGen(Arc(color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), PI+.2, 3*PI/2-.2)
                 for x in range(AWT, ABOXL, ARC_SPEED)),
-            ((color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), 3*PI/2+.2, 2*PI-.2)
+            ArcGen(Arc(color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), 3*PI/2+.2, 2*PI-.2)
                 for x in range(AWT, ABOXL, ARC_SPEED)),
         ]
 
@@ -188,12 +216,10 @@ class ArcMgr:
         # logger.debug(f"Angle: {angle}")
         arc_start =  radians(angle - 45) # convert to rads for pygame arc
         arc_end = radians(angle + 45)    # confert to rads for pygame arc
-        #self.arcs.append(     # Upper right
         return [
-            ((color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), arc_start, arc_end)
-                for x in range(AWT, ABOXL, ARC_SPEED)),
+            ArcGen((Arc(color, pygame.Rect(HBOX-x+x_offset, HBOX-x+y_offset, 2*x, 2*x), arc_start, arc_end)
+                for x in range(AWT, ABOXL, ARC_SPEED)), echo=True),
         ]
-        #)
 
     def __init__(self, scrn):
         self.screen = scrn
@@ -208,18 +234,24 @@ class ArcMgr:
             self.contacts.append(arc_details)
         else:
             points = [
-                (arc_details[1][0], arc_details[1][1]),
-                (arc_details[1][0], arc_details[1][1]+arc_details[1][3]),
-                (arc_details[1][0]+arc_details[1][2],
-                arc_details[1][1]+arc_details[1][3]),
-                (arc_details[1][0]+arc_details[1][2], arc_details[1][1]),
+                (arc_details.rect[0], arc_details.rect[1]),
+                (arc_details.rect[0], arc_details.rect[1]+arc_details.rect[3]),
+                (arc_details.rect[0]+arc_details.rect[2],
+                arc_details.rect[1]+arc_details.rect[3]),
+                (arc_details.rect[0]+arc_details.rect[2], arc_details.rect[1]),
             ]
             ## Outline arcs with boxes:
-            pygame.draw.lines(self.screen, arc_details[0], True, points, 1)
-            pygame.draw.arc(self.screen, *arc_details, AWT)
+            pygame.draw.lines(self.screen, arc_details.color, True, points, 1)
+            pygame.draw.arc(self.screen, *arc_details.iterable(), AWT)
 
-        if con := pygame.sprite.spritecollideany(arc_details[1], self.contacts):
-            self.arcs.append(self.arc_to_center_from_xy(con.x, con.y))
+        if not arc_gen.echo:
+            if con := pygame.sprite.spritecollideany(arc_details, self.contacts):
+                print(arc_gen.contacts)
+                if con not in arc_gen.contacts:
+                    self.arcs.extend(self.arc_to_center_from_xy(con.rect.x, con.rect.y, GREEN))
+                    arc_gen.contacts.append(con)
+                    print(arc_gen, arc_gen.contacts)
+                
 
     def draw(self):
         if self.arcs:
@@ -231,7 +263,8 @@ class ArcMgr:
         else:
             self.pinging = False
         for con in self.contacts:
-            self.screen.blit(con.surf, con.rect)
+            #con.rect.center = con.rect.topleft
+            self.screen.blit(con.image, con.rect.topleft)
 
 
     def start_ping(self, color=RED, sound=ping):
