@@ -36,6 +36,7 @@ pygame.mixer.pre_init(44100, -16, 1, 512)
 pygame.init()
 
 EXCLUSIVE_PING = False
+DEBUG = False
 
 # 0,0 is upper left of screen
 SCREEN_WIDTH = 1024
@@ -108,7 +109,8 @@ def main() -> None:
                         arc_mgr.arc_to_center_from_xy(rand_x, rand_y, GREEN)
                     )
                 if event.key == K_v:
-                    arc_mgr.arcs.extend(arc_mgr.arc_lower_right_bounced())
+                    arc_mgr.contacts.append(Contact(150, 617))
+                    # arc_mgr.arcs.extend(arc_mgr.arc_lower_right_bounced())
                 if event.key == K_w:
                     arc_mgr.contacts.append(Contact(112, 655))
 
@@ -197,11 +199,19 @@ class Contact(pygame.sprite.Sprite):
         self.rect.centery = y
         self.radius = self.rect.width // 2
         self.detected = False
+        self.identified = False
         self.image = pygame.image.load("question.png")
         self.type = ContactType.UNK
+        self.alpha = 255
 
 
 class ArcMgr:
+    def __init__(self, scrn):
+        self.screen = scrn
+        self.pinging = False
+        self.biosound = False
+        self.arcs = []
+        self.contacts = []
 
     def arc_lower_right_bounced(self):
         return [
@@ -293,13 +303,6 @@ class ArcMgr:
             ),
         ]
 
-    def __init__(self, scrn):
-        self.screen = scrn
-        self.pinging = False
-        self.biosound = False
-        self.arcs = []
-        self.contacts = []
-
     def draw_single_arc(self, arc_gen):
         arc_details = next(arc_gen)
         if isinstance(arc_details, Contact):
@@ -316,18 +319,18 @@ class ArcMgr:
                 (arc_details.rect[0] +
                  arc_details.rect[2], arc_details.rect[1]),
             ]
-            # Outline arcs with boxes:
-            # pygame.draw.lines(self.screen, arc_details.color, True, points, 1)
+            if DEBUG:
+                pygame.draw.lines(
+                    self.screen, arc_details.color, True, points, 1)
 
             pygame.draw.arc(self.screen, *arc_details.iterable(), AWT)
 
         if not arc_gen.echo:
-            # if con := pygame.sprite.spritecollideany(arc_details, self.contacts):
             collide = pygame.sprite.spritecollide(
                 arc_details, self.contacts, False, pygame.sprite.collide_circle
             )
             for con in collide:
-                print(arc_gen.contacts)
+                # print(arc_gen.contacts)
                 if con not in arc_gen.contacts:
                     self.arcs.extend(
                         self.arc_to_center_from_xy(
@@ -335,7 +338,8 @@ class ArcMgr:
                         )
                     )
                     arc_gen.contacts.append(con)
-                    print(arc_gen, arc_gen.contacts)
+                    con.detected = True
+                    con.alpha = 255
 
     def draw(self):
         if self.arcs:
@@ -347,10 +351,16 @@ class ArcMgr:
         else:
             self.pinging = False
         for con in self.contacts:
-            # con.rect.center = con.rect.topleft
-            self.screen.blit(con.image, con.rect)
-            # pygame.draw.rect(self.screen, RED, pygame.Rect(
-            #     con.rect.left, con.rect.top, con.rect.width, con.rect.height), 2)
+            if con.detected:
+                self.screen.blit(con.image, con.rect)
+                con.alpha -= 0.5
+                con.alpha = max(con.alpha, 0)
+                # logger.debug(con.alpha)
+                con.image.set_alpha(con.alpha)
+
+            if DEBUG:
+                pygame.draw.rect(self.screen, RED, pygame.Rect(
+                    con.rect.left, con.rect.top, con.rect.width, con.rect.height), 2)
 
     def start_ping(self, color=RED, sound=ping):
         if self.pinging and EXCLUSIVE_PING:
