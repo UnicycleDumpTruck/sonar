@@ -33,7 +33,7 @@ from rich.traceback import install
 install(show_locals=True)
 
 
-pygame.mixer.pre_init(44100, -16, 1, 512)
+pygame.mixer.pre_init(44100, -16, 1, 256)
 pygame.init()
 
 EXCLUSIVE_PING = False
@@ -215,6 +215,7 @@ class ArcGen:
         self.contacts = []
         self.generator = generator
         self.arc_type = arc_type
+        self.played = False
 
     def __iter__(self):
         return self
@@ -330,8 +331,8 @@ class Contact(pygame.sprite.Sprite):
             self.rect.x = new_x
             self.rect.y = new_y
             # self.rect.move_ip(new_x, new_y)
-            logger.debug(
-                f"speed:{self.speed} heading:{self.heading} new_x:{new_x} new_y:{new_y}")
+            # logger.debug(
+            #     f"speed:{self.speed} heading:{self.heading} new_x:{new_x} new_y:{new_y}")
 
     def heard(self):
         """Process sound and change heading and speed accordingly."""
@@ -493,9 +494,11 @@ class ArcMgr:
                     con.alpha = 255
                     con.last_known_x = con.rect.x
                     con.last_known_y = con.rect.y
-        elif arc_gen.arc_type in {ArcType.PING_ECHO}:
+        elif arc_gen.arc_type in {ArcType.PING_ECHO} and not arc_gen.played:
             if pygame.sprite.spritecollide(arc_details, [self.listener], False, pygame.sprite.collide_circle):
+                logger.debug(f"Playing sound: {arc_gen.arc_type.name}")
                 pygame.mixer.Sound.play(ping_sounds[arc_gen.arc_type])
+                arc_gen.played = True
 
     def draw(self):
         if self.arcs:
@@ -540,6 +543,7 @@ class ArcMgr:
             logger.debug("Commencing ping.")
             self.pinging = True
             pygame.mixer.Sound.play(sound)
+            logger.debug(f"Number of channels: {sound.get_num_channels()}")
             self.arcs.extend(self.arcs_from_xy(
                 HBOX, HBOX, color, ArcType.PING))
 
