@@ -60,8 +60,8 @@ BLACK = (0, 0, 0)
 HRETL = pygame.Rect(RWT, HBOX - RWT / 2, BOX - (RWT * 2), RWT)
 VRETL = pygame.Rect(HBOX - RWT / 2, RWT, RWT, BOX - (RWT * 2))
 TOP_SPEED = 10
-RANGE = HBOX + (75/2)  # Range outside of which to delete contact
-SUB_ICON = pygame.image.load('sub.png')
+RANGE = HBOX + (75 / 2)  # Range outside of which to delete contact
+SUB_ICON = pygame.image.load("sub.png")
 SUB_LOCATION = (HBOX - 50, HBOX - 40)
 
 
@@ -95,20 +95,20 @@ ping_sounds = {
 }
 
 dolphin_sounds = {
-    'hi': pygame.mixer.Sound("high_ping.wav"),
-    'love': pygame.mixer.Sound("high_ping.wav"),
-    'food': pygame.mixer.Sound("high_ping.wav"),
+    "hi": pygame.mixer.Sound("high_ping.wav"),
+    "love": pygame.mixer.Sound("high_ping.wav"),
+    "food": pygame.mixer.Sound("high_ping.wav"),
 }
 
 whale_sounds = {
-    'hi': pygame.mixer.Sound("high_ping.wav"),
-    'love': pygame.mixer.Sound("high_ping.wav"),
-    'food': pygame.mixer.Sound("high_ping.wav"),
+    "hi": pygame.mixer.Sound("high_ping.wav"),
+    "love": pygame.mixer.Sound("high_ping.wav"),
+    "food": pygame.mixer.Sound("high_ping.wav"),
 }
 
 animal_sounds = {
-    'dolphin': dolphin_sounds,
-    'whale': whale_sounds,
+    "dolphin": dolphin_sounds,
+    "whale": whale_sounds,
 }
 
 
@@ -211,11 +211,11 @@ class Arc:
 
 
 class ArcGen:
-    def __init__(self, generator, arc_type):
+    def __init__(self, generator, arc_type, silent=False):
         self.contacts = []
         self.generator = generator
         self.arc_type = arc_type
-        self.played = False
+        self.silent = silent
 
     def __iter__(self):
         return self
@@ -232,6 +232,7 @@ class ConType(Enum):
     DOLPHIN = auto()
     SHARK = auto()
 
+
 con_types = (
     ConType.UNK,
     ConType.SUB,
@@ -243,12 +244,13 @@ con_types = (
 
 con_weights = (
     0,  # UNK
-    10, # SUB
-    11, # SHIP
-    12, # WHALE
-    13, # DOLPHIN
-    14, # SHARK
+    10,  # SUB
+    11,  # SHIP
+    12,  # WHALE
+    13,  # DOLPHIN
+    14,  # SHARK
 )
+
 
 class Contact(pygame.sprite.Sprite):
     """Sonar contact."""
@@ -279,7 +281,7 @@ class Contact(pygame.sprite.Sprite):
         ConType.SHARK: [
             ConType.SHIP,
             ConType.SUB,
-        ]
+        ],
     }
 
     # Values are what the key will flee:
@@ -339,7 +341,8 @@ class Contact(pygame.sprite.Sprite):
         pass
 
     def __repr__(self):
-        return(f"{self.type.name} centered at x:{self.rect.centerx} y:{self.rect.centery}, heading:{self.heading} at rate:{self.speed}")
+        return f"{self.type.name} centered at x:{self.rect.centerx} y:{self.rect.centery}, heading:{self.heading} at rate:{self.speed}"
+
 
 class ArcMgr:
     def __init__(self, scrn):
@@ -348,7 +351,7 @@ class ArcMgr:
         self.biosound = False
         self.arcs = []
         self.contacts = []
-        self.listener = Contact(HBOX-50, HBOX-40)
+        self.listener = Contact(HBOX - 50, HBOX - 40)
         self.listener.rect.width = 100
         self.listener.rect.height = 100
         self.listener.radius = 50
@@ -382,6 +385,7 @@ class ArcMgr:
                     for x in range(AWT, ABOXL, ARC_SPEED)
                 ),
                 arc_type,
+                silent=True,  # Only one of these four should cause an audible echo
             ),
             ArcGen(
                 (
@@ -396,6 +400,7 @@ class ArcMgr:
                     for x in range(AWT, ABOXL, ARC_SPEED)
                 ),
                 arc_type,
+                silent=True,
             ),
             ArcGen(
                 (
@@ -410,6 +415,7 @@ class ArcMgr:
                     for x in range(AWT, ABOXL, ARC_SPEED)
                 ),
                 arc_type,
+                silent=True,
             ),
             ArcGen(
                 (
@@ -424,14 +430,14 @@ class ArcMgr:
                     for x in range(AWT, ABOXL, ARC_SPEED)
                 ),
                 arc_type,
+                silent=False,  # This one will cause an audible echo
             ),
         ]
 
     def arc_to_center_from_xy(self, start_x, start_y, color, arc_type):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
-        angle = angle_of_line(start_x, start_y, HBOX,
-                              HBOX)  # comes back in degrees
+        angle = angle_of_line(start_x, start_y, HBOX, HBOX)  # comes back degrees
         # logger.debug(f"Angle: {angle}")
         arc_start = radians(angle - 30)  # convert to rads for pygame arc
         arc_end = radians(angle + 30)  # confert to rads for pygame arc
@@ -459,22 +465,19 @@ class ArcMgr:
         else:
             points = [
                 (arc_details.rect[0], arc_details.rect[1]),
-                (arc_details.rect[0],
-                 arc_details.rect[1] + arc_details.rect[3]),
+                (arc_details.rect[0], arc_details.rect[1] + arc_details.rect[3]),
                 (
                     arc_details.rect[0] + arc_details.rect[2],
                     arc_details.rect[1] + arc_details.rect[3],
                 ),
-                (arc_details.rect[0] +
-                 arc_details.rect[2], arc_details.rect[1]),
+                (arc_details.rect[0] + arc_details.rect[2], arc_details.rect[1]),
             ]
             if DEBUG:
-                pygame.draw.lines(
-                    self.screen, arc_details.color, True, points, 1)
+                pygame.draw.lines(self.screen, arc_details.color, True, points, 1)
 
             pygame.draw.arc(self.screen, *arc_details.iterable(), AWT)
 
-        if arc_gen.arc_type in {ArcType.PING}:
+        if arc_gen.arc_type in {ArcType.PING} and not arc_gen.silent:
             collide = pygame.sprite.spritecollide(
                 arc_details, self.contacts, False, pygame.sprite.collide_circle
             )
@@ -494,11 +497,13 @@ class ArcMgr:
                     con.alpha = 255
                     con.last_known_x = con.rect.x
                     con.last_known_y = con.rect.y
-        elif arc_gen.arc_type in {ArcType.PING_ECHO} and not arc_gen.played:
-            if pygame.sprite.spritecollide(arc_details, [self.listener], False, pygame.sprite.collide_circle):
-                logger.debug(f"Playing sound: {arc_gen.arc_type.name}")
+        elif arc_gen.arc_type in {ArcType.PING_ECHO} and not arc_gen.silent:
+            if pygame.sprite.spritecollide(
+                arc_details, [self.listener], False, pygame.sprite.collide_circle
+            ):
+                # logger.debug(f"Playing sound: {arc_gen.arc_type.name}")
                 pygame.mixer.Sound.play(ping_sounds[arc_gen.arc_type])
-                arc_gen.played = True
+                arc_gen.silent = True
 
     def draw(self):
         if self.arcs:
@@ -512,17 +517,21 @@ class ArcMgr:
         for con in self.contacts:
             con.update()
             if con.detected:
-                self.screen.blit(
-                    con.image, (con.last_known_x, con.last_known_y))
+                self.screen.blit(con.image, (con.last_known_x, con.last_known_y))
                 con.alpha -= 0.6
                 con.alpha = max(con.alpha, 0)
                 con.image.set_alpha(con.alpha)
                 # if con.alpha < 5:
                 # con.update()
-            if pygame.math.Vector2(con.rect.centerx, con.rect.centery).distance_to(CENTER) > RANGE:
+            if (
+                pygame.math.Vector2(con.rect.centerx, con.rect.centery).distance_to(
+                    CENTER
+                )
+                > RANGE
+            ):
                 # if time.monotonic() - con.last_activity > con.max_age:
                 self.contacts.remove(con)
-                del(con)
+                del con
                 logger.debug("Contact out of range, deleted.")
 
             if DEBUG:
@@ -540,12 +549,11 @@ class ArcMgr:
             logger.debug("Ping requested, but already pinging.")
             return
         else:
-            logger.debug("Commencing ping.")
+            # logger.debug("Commencing ping.")
             self.pinging = True
             pygame.mixer.Sound.play(sound)
-            logger.debug(f"Number of channels: {sound.get_num_channels()}")
-            self.arcs.extend(self.arcs_from_xy(
-                HBOX, HBOX, color, ArcType.PING))
+            # logger.debug(f"Number of channels: {sound.get_num_channels()}")
+            self.arcs.extend(self.arcs_from_xy(HBOX, HBOX, color, ArcType.PING))
 
 
 if __name__ == "__main__":
