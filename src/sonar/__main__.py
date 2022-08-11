@@ -1,4 +1,4 @@
-"""Command-line interface."""
+"""Main program file for sonar interface."""
 import math
 import time
 from enum import Enum
@@ -45,7 +45,7 @@ SCREEN_HEIGHT = 768
 PI = math.pi
 BOX = 768  # Size of bounding box
 HBOX = BOX // 2
-CENT = (HBOX, HBOX)  # Center of box
+CENTER = (HBOX, HBOX)  # Center of box
 ABOXL = int(HBOX * 1)  # Arc box limit so they leave screen
 RWT = 2  # Reticle line weight
 ARC_SPEED = 4
@@ -59,6 +59,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 HRETL = pygame.Rect(RWT, HBOX - RWT / 2, BOX - (RWT * 2), RWT)
 VRETL = pygame.Rect(HBOX - RWT / 2, RWT, RWT, BOX - (RWT * 2))
+TOP_SPEED = 10
+RANGE = HBOX + (75/2) # Range outside of which to delete contact
 
 ping = pygame.mixer.Sound("high_ping.wav")
 r_ping = pygame.mixer.Sound("high_ping.wav")
@@ -110,12 +112,13 @@ def main() -> None:
                         arc_mgr.arc_to_center_from_xy(rand_x, rand_y, GREEN)
                     )
                 if event.key == K_t:
-                    angle = randint(0,359)
-                    radius = randint(100,HBOX)
-                    x = (radius * math.cos(angle) + HBOX)
-                    y = (radius * math.sin(angle) + HBOX)
+                    angle = randint(0, 359)
+                    # radius = randint(100, HBOX)
+                    radius = HBOX - 40
+                    x = radius * math.cos(angle) + HBOX
+                    y = radius * math.sin(angle) + HBOX
                     logger.debug(f"Random contact at {x,y}")
-                    arc_mgr.contacts.append(Contact(x,y))
+                    arc_mgr.contacts.append(Contact(x, y))
                 if event.key == K_v:
                     arc_mgr.contacts.append(Contact(150, 617))
                     # arc_mgr.arcs.extend(arc_mgr.arc_lower_right_bounced())
@@ -142,20 +145,20 @@ def main() -> None:
 
 def draw_reticle(scrn):
     # Outer White Circle
-    pygame.draw.circle(scrn, WHITE, CENT, BOX // 2 - RWT)
+    pygame.draw.circle(scrn, WHITE, CENTER, BOX // 2 - RWT)
 
     # Inner Blue Circle
-    pygame.draw.circle(scrn, BG_BLUE, CENT, BOX // 2 - (RWT * 2))
+    pygame.draw.circle(scrn, BG_BLUE, CENTER, BOX // 2 - (RWT * 2))
 
     # Reticle crossing lines
     pygame.draw.rect(scrn, WHITE, HRETL)
     pygame.draw.rect(scrn, WHITE, VRETL)
 
     # Central Blanking circle
-    pygame.draw.circle(scrn, BG_BLUE, CENT, RCNT + RWT)
+    pygame.draw.circle(scrn, BG_BLUE, CENTER, RCNT + RWT)
 
     # Central circle
-    pygame.draw.circle(scrn, WHITE, CENT, RCNT)
+    pygame.draw.circle(scrn, WHITE, CENTER, RCNT)
 
 
 class Arc:
@@ -171,6 +174,7 @@ class Arc:
 
     def iterable(self):
         return (self.color, self.rect, self.start, self.end)
+
 
 class ArcType(Enum):
     PING = auto()
@@ -192,17 +196,65 @@ class ArcGen:
         return next(self.generator)
 
 
-class ContactType(Enum):
+class ConType(Enum):
     UNK = auto()
     SUB = auto()
     SHIP = auto()
     WHALE = auto()
     DOLPHIN = auto()
+    SHARK = auto()
 
 
 class Contact(pygame.sprite.Sprite):
     """Sonar contact."""
 
+    # Values are what the key will move toward:
+    friends = {
+        ConType.UNK: [],
+        ConType.SHIP: [
+            ConType.DOLPHIN,
+            ConType.WHALE,
+            ConType.SHARK,
+            ConType.SUB,
+        ],
+        ConType.SUB: [
+            ConType.SHIP,
+            ConType.DOLPHIN,
+            ConType.SHARK,
+            ConType.WHALE,
+        ],
+        ConType.WHALE: [
+            ConType.WHALE,
+        ],
+        ConType.DOLPHIN: [
+            ConType.DOLPHIN,
+            ConType.SHIP,
+            ConType.SUB,
+        ],
+        ConType.SHARK: [
+            ConType.SHIP,
+            ConType.SUB,
+        ]
+    }
+
+    # Values are what the key will flee:
+    foes = {
+        ConType: [],
+        ConType.DOLPHIN: [
+            ConType.SHARK,
+        ],
+        ConType.SHIP: [],
+        ConType.WHALE: [
+            ConType.SHARK,
+            ConType.SHIP,
+        ],
+        ConType.SUB: [],
+        ConType.SHARK: [],
+    }
+
+    # TODO: movement toward good sounds away from bad
+    # TODO: Categorize sounds good, bad, indifferent
+    # TODO: wander away after period
     def __init__(self, x, y):
         """Initialize."""
         super().__init__()
@@ -215,11 +267,30 @@ class Contact(pygame.sprite.Sprite):
         self.detected = False
         self.identified = False
         self.image = pygame.image.load("question.png")
-        self.type = ContactType.UNK
+        self.type = ConType.UNK
         self.alpha = 255
         self.last_activity = time.monotonic()
         self.max_age = 60
+        self.heading = randint(0, 359)
+        self.speed = 3
+        self.last_move = time.monotonic()
+        self.last_known_x = self.rect.x
+        self.last_known_y = self.rect.y
 
+    def update(self):
+        """Continue at set heading and speed."""
+        if time.monotonic() - self.last_move > 0.5:
+            self.last_move = time.monotonic()
+            new_x = int((self.speed * math.cos(self.heading)) + self.rect.left)
+            new_y = int((self.speed * math.sin(self.heading)) + self.rect.top)
+            self.rect.x = new_x
+            self.rect.y = new_y
+            # self.rect.move_ip(new_x, new_y)
+            logger.debug(f"speed:{self.speed} heading:{self.heading} new_x:{new_x} new_y:{new_y}")
+
+    def heard(self):
+        """Process sound and change heading and speed accordingly."""
+        pass
 
 class ArcMgr:
     def __init__(self, scrn):
@@ -229,64 +300,77 @@ class ArcMgr:
         self.arcs = []
         self.contacts = []
 
-    def arcs_from_xy(self, start_x=HBOX, start_y=HBOX, color=RED, arc_type=ArcType.PING):
+    def arcs_from_xy(
+        self, start_x=HBOX, start_y=HBOX, color=RED, arc_type=ArcType.PING
+    ):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
         return [  # Upper right
             ArcGen(
-                (Arc(
-                    color,
-                    pygame.Rect(HBOX - x + x_offset, HBOX - \
-                                x + y_offset, 2 * x, 2 * x),
-                    0 + 0.2,
-                    PI / 2 - 0.2,
-                )
-                for x in range(AWT, ABOXL, ARC_SPEED)),
-                arc_type
+                (
+                    Arc(
+                        color,
+                        pygame.Rect(
+                            HBOX - x + x_offset, HBOX - x + y_offset, 2 * x, 2 * x
+                        ),
+                        0 + 0.2,
+                        PI / 2 - 0.2,
+                    )
+                    for x in range(AWT, ABOXL, ARC_SPEED)
+                ),
+                arc_type,
             ),
             ArcGen(
-                (Arc(
-                    color,
-                    pygame.Rect(HBOX - x + x_offset, HBOX - \
-                                x + y_offset, 2 * x, 2 * x),
-                    PI / 2 + 0.2,
-                    PI - 0.2,
-                )
-                for x in range(AWT, ABOXL, ARC_SPEED)),
-                arc_type
+                (
+                    Arc(
+                        color,
+                        pygame.Rect(
+                            HBOX - x + x_offset, HBOX - x + y_offset, 2 * x, 2 * x
+                        ),
+                        PI / 2 + 0.2,
+                        PI - 0.2,
+                    )
+                    for x in range(AWT, ABOXL, ARC_SPEED)
+                ),
+                arc_type,
             ),
             ArcGen(
-                (Arc(
-                    color,
-                    pygame.Rect(HBOX - x + x_offset, HBOX - \
-                                x + y_offset, 2 * x, 2 * x),
-                    PI + 0.2,
-                    3 * PI / 2 - 0.2,
-                )
-                for x in range(AWT, ABOXL, ARC_SPEED)),
-                arc_type
+                (
+                    Arc(
+                        color,
+                        pygame.Rect(
+                            HBOX - x + x_offset, HBOX - x + y_offset, 2 * x, 2 * x
+                        ),
+                        PI + 0.2,
+                        3 * PI / 2 - 0.2,
+                    )
+                    for x in range(AWT, ABOXL, ARC_SPEED)
+                ),
+                arc_type,
             ),
             ArcGen(
-                (Arc(
-                    color,
-                    pygame.Rect(HBOX - x + x_offset, HBOX - \
-                                x + y_offset, 2 * x, 2 * x),
-                    3 * PI / 2 + 0.2,
-                    2 * PI - 0.2,
-                )
-                for x in range(AWT, ABOXL, ARC_SPEED)),
-                arc_type
+                (
+                    Arc(
+                        color,
+                        pygame.Rect(
+                            HBOX - x + x_offset, HBOX - x + y_offset, 2 * x, 2 * x
+                        ),
+                        3 * PI / 2 + 0.2,
+                        2 * PI - 0.2,
+                    )
+                    for x in range(AWT, ABOXL, ARC_SPEED)
+                ),
+                arc_type,
             ),
         ]
 
     def arc_to_center_from_xy(self, start_x, start_y, color, arc_type):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
-        angle = angle_of_line(start_x, start_y, HBOX,
-                              HBOX)  # comes back in degrees
+        angle = angle_of_line(start_x, start_y, HBOX, HBOX)  # comes back in degrees
         # logger.debug(f"Angle: {angle}")
-        arc_start = radians(angle - 45)  # convert to rads for pygame arc
-        arc_end = radians(angle + 45)  # confert to rads for pygame arc
+        arc_start = radians(angle - 30)  # convert to rads for pygame arc
+        arc_end = radians(angle + 30)  # confert to rads for pygame arc
         return [
             ArcGen(
                 (
@@ -311,18 +395,15 @@ class ArcMgr:
         else:
             points = [
                 (arc_details.rect[0], arc_details.rect[1]),
-                (arc_details.rect[0],
-                 arc_details.rect[1] + arc_details.rect[3]),
+                (arc_details.rect[0], arc_details.rect[1] + arc_details.rect[3]),
                 (
                     arc_details.rect[0] + arc_details.rect[2],
                     arc_details.rect[1] + arc_details.rect[3],
                 ),
-                (arc_details.rect[0] +
-                 arc_details.rect[2], arc_details.rect[1]),
+                (arc_details.rect[0] + arc_details.rect[2], arc_details.rect[1]),
             ]
             if DEBUG:
-                pygame.draw.lines(
-                    self.screen, arc_details.color, True, points, 1)
+                pygame.draw.lines(self.screen, arc_details.color, True, points, 1)
 
             pygame.draw.arc(self.screen, *arc_details.iterable(), AWT)
 
@@ -335,12 +416,17 @@ class ArcMgr:
                 if con not in arc_gen.contacts:
                     self.arcs.extend(
                         self.arc_to_center_from_xy(
-                            con.rect.centerx, con.rect.centery, arc_details.color, ArcType.PING_ECHO
+                            con.rect.centerx,
+                            con.rect.centery,
+                            arc_details.color,
+                            ArcType.PING_ECHO,
                         )
                     )
                     arc_gen.contacts.append(con)
                     con.detected = True
                     con.alpha = 255
+                    con.last_known_x = con.rect.x
+                    con.last_known_y = con.rect.y
 
     def draw(self):
         if self.arcs:
@@ -352,18 +438,30 @@ class ArcMgr:
         else:
             self.pinging = False
         for con in self.contacts:
-            if time.monotonic() - con.last_activity > con.max_age:
-                self.contacts.remove(con)
+            con.update()
             if con.detected:
-                self.screen.blit(con.image, con.rect)
-                con.alpha -= 0.5
+                self.screen.blit(con.image, (con.last_known_x, con.last_known_y))
+                con.alpha -= 0.6
                 con.alpha = max(con.alpha, 0)
-                # logger.debug(con.alpha)
                 con.image.set_alpha(con.alpha)
+                # if con.alpha < 5:
+                    # con.update()
+            if pygame.math.Vector2(con.rect.centerx, con.rect.centery).distance_to(CENTER) > RANGE:
+            # if time.monotonic() - con.last_activity > con.max_age:
+                self.contacts.remove(con)
+                del(con)
+                logger.debug("Contact out of range, deleted.")
+
 
             if DEBUG:
-                pygame.draw.rect(self.screen, RED, pygame.Rect(
-                    con.rect.left, con.rect.top, con.rect.width, con.rect.height), 2)
+                pygame.draw.rect(
+                    self.screen,
+                    RED,
+                    pygame.Rect(
+                        con.rect.left, con.rect.top, con.rect.width, con.rect.height
+                    ),
+                    2,
+                )
 
     def start_ping(self, color=RED, sound=ping):
         if self.pinging and EXCLUSIVE_PING:
