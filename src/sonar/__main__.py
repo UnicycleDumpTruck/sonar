@@ -7,7 +7,7 @@ from itertools import chain
 from math import atan2
 from math import degrees
 from math import radians
-from random import randint
+from random import randint, choices
 
 import pygame
 from loguru import logger
@@ -231,6 +231,23 @@ class ConType(Enum):
     DOLPHIN = auto()
     SHARK = auto()
 
+con_types = (
+    ConType.UNK,
+    ConType.SUB,
+    ConType.SHIP,
+    ConType.WHALE,
+    ConType.DOLPHIN,
+    ConType.SHARK,
+)
+
+con_weights = (
+    0,  # UNK
+    10, # SUB
+    11, # SHIP
+    12, # WHALE
+    13, # DOLPHIN
+    14, # SHARK
+)
 
 class Contact(pygame.sprite.Sprite):
     """Sonar contact."""
@@ -282,7 +299,7 @@ class Contact(pygame.sprite.Sprite):
     # TODO: movement toward good sounds away from bad
     # TODO: Categorize sounds good, bad, indifferent
     # TODO: wander away after period
-    def __init__(self, x, y):
+    def __init__(self, x, y, type=ConType.UNK):
         """Initialize."""
         super().__init__()
         self.surf = pygame.Surface((75, 75))
@@ -294,7 +311,7 @@ class Contact(pygame.sprite.Sprite):
         self.detected = False
         self.identified = False
         self.image = pygame.image.load("question.png")
-        self.type = ConType.UNK
+        self.type = type
         self.alpha = 255
         self.last_activity = time.monotonic()
         self.max_age = 60
@@ -320,6 +337,8 @@ class Contact(pygame.sprite.Sprite):
         """Process sound and change heading and speed accordingly."""
         pass
 
+    def __repr__(self):
+        return(f"{self.type.name} centered at x:{self.rect.centerx} y:{self.rect.centery}, heading:{self.heading} at rate:{self.speed}")
 
 class ArcMgr:
     def __init__(self, scrn):
@@ -339,8 +358,9 @@ class ArcMgr:
         # radius = HBOX - 40
         x = radius * math.cos(angle) + HBOX
         y = radius * math.sin(angle) + HBOX
-        logger.debug(f"Random contact at {x,y}")
-        self.contacts.append(Contact(x, y))
+        new_contact = Contact(x, y, choices(con_types, con_weights, k=1)[0])
+        self.contacts.append(new_contact)
+        logger.debug(f"Random contact: {new_contact}")
 
     def arcs_from_xy(
         self, start_x=HBOX, start_y=HBOX, color=RED, arc_type=ArcType.PING
