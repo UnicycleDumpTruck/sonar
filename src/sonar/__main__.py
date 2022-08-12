@@ -61,7 +61,7 @@ HRETL = pygame.Rect(RWT, HBOX - RWT / 2, BOX - (RWT * 2), RWT)
 VRETL = pygame.Rect(HBOX - RWT / 2, RWT, RWT, BOX - (RWT * 2))
 TOP_SPEED = 10
 RANGE = HBOX + (75 / 2)  # Range outside of which to delete contact
-SUB_ICON = pygame.image.load("sub.png")
+SUB_ICON = pygame.image.load("big_sub.png")
 SUB_LOCATION = (HBOX - 50, HBOX - 40)
 
 
@@ -252,13 +252,14 @@ con_weights = (
 )
 
 con_image_filenames = {
-        ConType.UNK: "question.png",
-        ConType.SHIP: "ship.png",
-        ConType.SUB: "sub.png",
-        ConType.WHALE: "question.png",
-        ConType.DOLPHIN: "dolphin.png",
-        ConType.SHARK: "question.png",
+    ConType.UNK: "question.png",
+    ConType.SHIP: "ship.png",
+    ConType.SUB: "sub.png",
+    ConType.WHALE: "whale.png",
+    ConType.DOLPHIN: "dolphin.png",
+    ConType.SHARK: "shark.png",
 }
+
 
 class Contact(pygame.sprite.Sprite):
     """Sonar contact."""
@@ -445,7 +446,8 @@ class ArcMgr:
     def arc_to_center_from_xy(self, start_x, start_y, color, arc_type):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
-        angle = angle_of_line(start_x, start_y, HBOX, HBOX)  # comes back degrees
+        angle = angle_of_line(start_x, start_y, HBOX,
+                              HBOX)  # comes back degrees
         # logger.debug(f"Angle: {angle}")
         arc_start = radians(angle - 30)  # convert to rads for pygame arc
         arc_end = radians(angle + 30)  # confert to rads for pygame arc
@@ -473,15 +475,18 @@ class ArcMgr:
         else:
             points = [
                 (arc_details.rect[0], arc_details.rect[1]),
-                (arc_details.rect[0], arc_details.rect[1] + arc_details.rect[3]),
+                (arc_details.rect[0],
+                 arc_details.rect[1] + arc_details.rect[3]),
                 (
                     arc_details.rect[0] + arc_details.rect[2],
                     arc_details.rect[1] + arc_details.rect[3],
                 ),
-                (arc_details.rect[0] + arc_details.rect[2], arc_details.rect[1]),
+                (arc_details.rect[0] +
+                 arc_details.rect[2], arc_details.rect[1]),
             ]
             if DEBUG:
-                pygame.draw.lines(self.screen, arc_details.color, True, points, 1)
+                pygame.draw.lines(
+                    self.screen, arc_details.color, True, points, 1)
 
             pygame.draw.arc(self.screen, *arc_details.iterable(), AWT)
 
@@ -507,7 +512,8 @@ class ArcMgr:
                     con.last_known_y = con.rect.y
         elif arc_gen.arc_type in {ArcType.PING_ECHO} and not arc_gen.silent:
             if pygame.sprite.spritecollide(
-                arc_details, [self.listener], False, pygame.sprite.collide_circle
+                arc_details, [
+                    self.listener], False, pygame.sprite.collide_circle
             ):
                 # logger.debug(f"Playing sound: {arc_gen.arc_type.name}")
                 pygame.mixer.Sound.play(ping_sounds[arc_gen.arc_type])
@@ -525,7 +531,8 @@ class ArcMgr:
         for con in self.contacts:
             con.update()
             if con.detected:
-                self.screen.blit(con.image, (con.last_known_x, con.last_known_y))
+                self.screen.blit(
+                    con.image, (con.last_known_x, con.last_known_y))
                 con.alpha -= 0.6
                 con.alpha = max(con.alpha, 0)
                 con.image.set_alpha(con.alpha)
@@ -561,7 +568,8 @@ class ArcMgr:
             self.pinging = True
             pygame.mixer.Sound.play(sound)
             # logger.debug(f"Number of channels: {sound.get_num_channels()}")
-            self.arcs.extend(self.arcs_from_xy(HBOX, HBOX, color, ArcType.PING))
+            self.arcs.extend(self.arcs_from_xy(
+                HBOX, HBOX, color, ArcType.PING))
 
 
 if __name__ == "__main__":
