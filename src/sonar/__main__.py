@@ -251,6 +251,14 @@ con_weights = (
     14,  # SHARK
 )
 
+con_image_filenames = {
+        ConType.UNK: "question.png",
+        ConType.SHIP: "ship.png",
+        ConType.SUB: "sub.png",
+        ConType.WHALE: "question.png",
+        ConType.DOLPHIN: "dolphin.png",
+        ConType.SHARK: "question.png",
+}
 
 class Contact(pygame.sprite.Sprite):
     """Sonar contact."""
@@ -313,7 +321,7 @@ class Contact(pygame.sprite.Sprite):
         self.radius = self.rect.width // 2
         self.detected = False
         self.identified = False
-        self.image = pygame.image.load("question.png")
+        self.image = pygame.image.load(con_image_filenames[type])
         self.type = type
         self.alpha = 255
         self.last_activity = time.monotonic()
