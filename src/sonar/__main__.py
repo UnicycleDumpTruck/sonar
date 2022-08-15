@@ -76,6 +76,7 @@ class ArcType(Enum):
     PINGC_ECHO = auto()
     BIO = auto()
     BIO_ECHO = auto()
+    
 
 
 ping = pygame.mixer.Sound("high_ping.wav")
@@ -211,11 +212,14 @@ class Arc:
 
 
 class ArcGen:
-    def __init__(self, generator, arc_type, silent=False):
+    def __init__(self, generator, arc_type, originator, silent=False, tags=[]):
         self.contacts = []
         self.generator = generator
         self.arc_type = arc_type
         self.silent = silent
+        self.tags = tags
+        self.originator = originator
+
 
     def __iter__(self):
         return self
@@ -231,6 +235,8 @@ class ConType(Enum):
     WHALE = auto()
     DOLPHIN = auto()
     SHARK = auto()
+    NARWHAL = auto()
+    ORCA = auto()
 
 
 con_types = (
@@ -240,15 +246,19 @@ con_types = (
     ConType.WHALE,
     ConType.DOLPHIN,
     ConType.SHARK,
+    ConType.NARWHAL,
+    ConType.ORCA,
 )
 
 con_weights = (
     0,  # UNK
-    10,  # SUB
-    11,  # SHIP
+    5,  # SUB
+    5,  # SHIP
     12,  # WHALE
-    13,  # DOLPHIN
-    14,  # SHARK
+    15,  # DOLPHIN
+    10,  # SHARK
+    10,  # NARWHAL
+    12,  # ORCA
 )
 
 con_image_filenames = {
@@ -258,6 +268,8 @@ con_image_filenames = {
     ConType.WHALE: "whale.png",
     ConType.DOLPHIN: "dolphin.png",
     ConType.SHARK: "shark.png",
+    ConType.NARWHAL: "narwhal.png",
+    ConType.ORCA: "whale.png"
 }
 
 
@@ -272,18 +284,26 @@ class Contact(pygame.sprite.Sprite):
             ConType.WHALE,
             ConType.SHARK,
             ConType.SUB,
+            ConType.NARWHAL,
+            ConType.ORCA,
         ],
         ConType.SUB: [
             ConType.SHIP,
             ConType.DOLPHIN,
             ConType.SHARK,
             ConType.WHALE,
+            ConType.NARWHAL,
+            ConType.ORCA,
         ],
         ConType.WHALE: [
             ConType.WHALE,
+            ConType.ORCA,
+            ConType.DOLPHIN,
         ],
         ConType.DOLPHIN: [
             ConType.DOLPHIN,
+            ConType.ORCA,
+            ConType.NARWHAL,
             ConType.SHIP,
             ConType.SUB,
         ],
@@ -295,7 +315,7 @@ class Contact(pygame.sprite.Sprite):
 
     # Values are what the key will flee:
     foes = {
-        ConType: [],
+        ConType.UNK: [],
         ConType.DOLPHIN: [
             ConType.SHARK,
         ],
@@ -305,7 +325,10 @@ class Contact(pygame.sprite.Sprite):
             ConType.SHIP,
         ],
         ConType.SUB: [],
-        ConType.SHARK: [],
+        ConType.SHARK: [
+            ConType.ORCA,
+            ConType.DOLPHIN
+        ],
     }
 
     # TODO: movement toward good sounds away from bad
@@ -345,9 +368,9 @@ class Contact(pygame.sprite.Sprite):
             # logger.debug(
             #     f"speed:{self.speed} heading:{self.heading} new_x:{new_x} new_y:{new_y}")
 
-    def heard(self):
+    def heard(self, arc_gen):
         """Process sound and change heading and speed accordingly."""
-        pass
+        logger.debug(f"{self} heard {arc_gen.arc_type} w tags {arc_gen.tags} originating from {arc_gen.originator}")
 
     def __repr__(self):
         return f"{self.type.name} centered at x:{self.rect.centerx} y:{self.rect.centery}, heading:{self.heading} at rate:{self.speed}"
@@ -360,7 +383,7 @@ class ArcMgr:
         self.biosound = False
         self.arcs = []
         self.contacts = []
-        self.listener = Contact(HBOX - 50, HBOX - 40)
+        self.listener = Contact(HBOX - 50, HBOX - 40, ConType.SUB)
         self.listener.rect.width = 100
         self.listener.rect.height = 100
         self.listener.radius = 50
@@ -376,7 +399,7 @@ class ArcMgr:
         logger.debug(f"Random contact: {new_contact}")
 
     def arcs_from_xy(
-        self, start_x=HBOX, start_y=HBOX, color=RED, arc_type=ArcType.PING
+        self, originator, start_x=HBOX, start_y=HBOX, color=RED, arc_type=ArcType.PING, tags=[]
     ):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
@@ -394,7 +417,9 @@ class ArcMgr:
                     for x in range(AWT, ABOXL, ARC_SPEED)
                 ),
                 arc_type,
+                originator,
                 silent=True,  # Only one of these four should cause an audible echo
+                tags=tags,
             ),
             ArcGen(
                 (
@@ -409,7 +434,9 @@ class ArcMgr:
                     for x in range(AWT, ABOXL, ARC_SPEED)
                 ),
                 arc_type,
+                originator,
                 silent=True,
+                tags=tags,
             ),
             ArcGen(
                 (
@@ -424,7 +451,9 @@ class ArcMgr:
                     for x in range(AWT, ABOXL, ARC_SPEED)
                 ),
                 arc_type,
+                originator,
                 silent=True,
+                tags=tags,
             ),
             ArcGen(
                 (
@@ -439,11 +468,13 @@ class ArcMgr:
                     for x in range(AWT, ABOXL, ARC_SPEED)
                 ),
                 arc_type,
+                originator,
                 silent=False,  # This one will cause an audible echo
+                tags=tags,
             ),
         ]
 
-    def arc_to_center_from_xy(self, start_x, start_y, color, arc_type):
+    def arc_to_center_from_xy(self, originator, start_x, start_y, color, arc_type, tags=[]):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
         angle = angle_of_line(start_x, start_y, HBOX,
@@ -465,6 +496,8 @@ class ArcMgr:
                     for x in range(AWT, ABOXL, ARC_SPEED)
                 ),
                 arc_type=arc_type,
+                originator=originator,
+                tags=tags
             ),
         ]
 
@@ -489,16 +522,18 @@ class ArcMgr:
                     self.screen, arc_details.color, True, points, 1)
 
             pygame.draw.arc(self.screen, *arc_details.iterable(), AWT)
-
+        #logger.debug(f"arc_type:{arc_gen.arc_type}")
         if arc_gen.arc_type in {ArcType.PING} and not arc_gen.silent:
             collide = pygame.sprite.spritecollide(
                 arc_details, self.contacts, False, pygame.sprite.collide_circle
             )
             for con in collide:
-                # print(arc_gen.contacts)
                 if con not in arc_gen.contacts:
+                    con.heard(arc_gen)
+                    logger.debug(f"Arc of type {arc_gen.arc_type} collided contact w tags {arc_gen.tags}")
                     self.arcs.extend(
                         self.arc_to_center_from_xy(
+                            con,
                             con.rect.centerx,
                             con.rect.centery,
                             arc_details.color,
@@ -515,10 +550,11 @@ class ArcMgr:
                 arc_details, [
                     self.listener], False, pygame.sprite.collide_circle
             ):
+                # Echo has come back to submarine.
                 # logger.debug(f"Playing sound: {arc_gen.arc_type.name}")
                 pygame.mixer.Sound.play(ping_sounds[arc_gen.arc_type])
                 arc_gen.silent = True
-
+                self.listener.heard(arc_gen)
     def draw(self):
         if self.arcs:
             for arc in self.arcs:
@@ -569,7 +605,7 @@ class ArcMgr:
             pygame.mixer.Sound.play(sound)
             # logger.debug(f"Number of channels: {sound.get_num_channels()}")
             self.arcs.extend(self.arcs_from_xy(
-                HBOX, HBOX, color, ArcType.PING))
+                self.listener, HBOX, HBOX, color, ArcType.PING))
 
 
 if __name__ == "__main__":
