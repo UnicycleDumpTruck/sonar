@@ -1,4 +1,5 @@
 """Main program file for sonar interface."""
+import os
 import math
 import time
 from enum import Enum
@@ -32,6 +33,8 @@ from rich.traceback import install
 
 install(show_locals=True)
 
+#os.environ['SDL_VIDEODRIVER'] = "directfb"
+#os.environ['SDL_FBDEV'] = '/dev/fb0'
 
 pygame.mixer.pre_init(44100, -16, 1, 256)
 pygame.init()
@@ -129,7 +132,8 @@ def main() -> None:
 
     # Set up the drawing window
     # screen = pygame.display.set_mode([BOX, BOX])
-    screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
+    # screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
+    screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
     arc_mgr = ArcMgr(screen)
     pygame.mouse.set_visible(False)
     # Run until quit
