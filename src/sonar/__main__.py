@@ -289,6 +289,7 @@ class Contact(pygame.sprite.Sprite):
         ],
         ConType.SUB: [
             ConType.SHIP,
+            ConType.SUB,
             ConType.DOLPHIN,
             ConType.SHARK,
             ConType.WHALE,
@@ -299,6 +300,7 @@ class Contact(pygame.sprite.Sprite):
             ConType.WHALE,
             ConType.ORCA,
             ConType.DOLPHIN,
+            ConType.SUB,
         ],
         ConType.DOLPHIN: [
             ConType.DOLPHIN,
@@ -311,6 +313,14 @@ class Contact(pygame.sprite.Sprite):
             ConType.SHIP,
             ConType.SUB,
         ],
+        ConType.NARWHAL: [
+            ConType.NARWHAL,
+            ConType.SUB,
+        ],
+        ConType.ORCA: [
+            ConType.ORCA,
+            ConType.SUB,
+        ]
     }
 
     # Values are what the key will flee:
@@ -328,6 +338,12 @@ class Contact(pygame.sprite.Sprite):
         ConType.SHARK: [
             ConType.ORCA,
             ConType.DOLPHIN
+        ],
+        ConType.NARWHAL: [
+            ConType.NARWHAL
+        ],
+        ConType.ORCA: [
+            ConType.ORCA
         ],
     }
 
@@ -371,7 +387,30 @@ class Contact(pygame.sprite.Sprite):
     def heard(self, arc_gen):
         """Process sound and change heading and speed accordingly."""
         logger.debug(f"{self} heard {arc_gen.arc_type} w tags {arc_gen.tags} originating from {arc_gen.originator}")
-
+        heard_type = arc_gen.originator.type
+        if heard_type in Contact.foes[self.type]:
+            logger.debug(f"Foe: I, {self.type} am afraid of {arc_gen.originator.type}!")
+            self.heading = angle_of_line(
+                self.rect.centerx,
+                self.rect.centery,
+                arc_gen.originator.rect.centerx,
+                arc_gen.originator.rect.centery,
+                # self.rect.centerx,
+                # self.rect.centery
+            )
+        elif heard_type in Contact.friends[self.type]:
+            logger.debug(f"Friendly {heard_type}! I, {self.type}, will go closer.")
+            self.heading = angle_of_line(
+                self.rect.centerx - HBOX,
+                self.rect.centery - HBOX,
+                arc_gen.originator.rect.centerx,
+                arc_gen.originator.rect.centery,
+                # self.rect.centerx,
+                # self.rect.centery
+            )
+        else:
+            logger.debug(f"A {heard_type}, whatever, I, {self.type} don't care.")
+        
     def __repr__(self):
         return f"{self.type.name} centered at x:{self.rect.centerx} y:{self.rect.centery}, heading:{self.heading} at rate:{self.speed}"
 
@@ -477,8 +516,7 @@ class ArcMgr:
     def arc_to_center_from_xy(self, originator, start_x, start_y, color, arc_type, tags=[]):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
-        angle = angle_of_line(start_x, start_y, HBOX,
-                              HBOX)  # comes back degrees
+        angle = angle_of_line(start_x, start_y, HBOX, HBOX)  # comes back degrees
         # logger.debug(f"Angle: {angle}")
         arc_start = radians(angle - 30)  # convert to rads for pygame arc
         arc_end = radians(angle + 30)  # confert to rads for pygame arc
@@ -497,7 +535,8 @@ class ArcMgr:
                 ),
                 arc_type=arc_type,
                 originator=originator,
-                tags=tags
+                silent=False,
+                tags=tags,
             ),
         ]
 
