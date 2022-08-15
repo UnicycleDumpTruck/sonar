@@ -38,6 +38,7 @@ pygame.init()
 
 EXCLUSIVE_PING = False
 DEBUG = False
+FADEOUT = False
 
 # 0,0 is upper left of screen
 SCREEN_WIDTH = 1024
@@ -606,12 +607,15 @@ class ArcMgr:
         for con in self.contacts:
             con.update()
             if con.detected:
-                self.screen.blit(
+                if FADEOUT:
+                    self.screen.blit(
                     con.image, (con.last_known_x, con.last_known_y))
-                con.alpha -= 0.6
-                con.alpha = max(con.alpha, 0)
-                con.image.set_alpha(con.alpha)
-                # if con.alpha < 5:
+                    con.alpha -= 0.6
+                    con.alpha = max(con.alpha, 0)
+                    con.image.set_alpha(con.alpha)
+                else:
+                    self.screen.blit(con.image, con.rect)
+                # con.alpha < 5:
                 # con.update()
             if (
                 pygame.math.Vector2(con.rect.centerx, con.rect.centery).distance_to(
