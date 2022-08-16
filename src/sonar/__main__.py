@@ -77,7 +77,6 @@ class ArcType(Enum):
     PINGC_ECHO = auto()
     BIO = auto()
     BIO_ECHO = auto()
-    
 
 
 ping = pygame.mixer.Sound("high_ping.wav")
@@ -220,7 +219,6 @@ class ArcGen:
         self.silent = silent
         self.tags = tags
         self.originator = originator
-
 
     def __iter__(self):
         return self
@@ -387,31 +385,42 @@ class Contact(pygame.sprite.Sprite):
 
     def heard(self, arc_gen):
         """Process sound and change heading and speed accordingly."""
-        logger.debug(f"{self} heard {arc_gen.arc_type} w tags {arc_gen.tags} originating from {arc_gen.originator}")
+        # logger.debug(
+        #     f"{self} heard {arc_gen.arc_type} w tags {arc_gen.tags} originating from {arc_gen.originator}")
         heard_type = arc_gen.originator.type
-        if heard_type in Contact.foes[self.type]:
-            logger.debug(f"Foe: I, {self.type} am afraid of {arc_gen.originator.type}!")
-            self.heading = angle_of_line(
+        # if heard_type in Contact.foes[self.type]:
+        #     logger.debug(
+        #         f"Foe: I, {self.type} am afraid of {arc_gen.originator.type}!")
+        #     self.heading = angle_of_line(
+        #         self.rect.centerx,
+        #         self.rect.centery,
+        #         arc_gen.originator.rect.centerx,
+        #         arc_gen.originator.rect.centery,
+        #         # self.rect.centerx,
+        #         # self.rect.centery
+        #     )
+        if heard_type in Contact.friends[self.type]:
+            # logger.debug(
+            #     f"Friendly {heard_type}! I, {self.type}, will go closer.")
+            prev_heading = self.heading
+            new_heading = angle_of_line(
                 self.rect.centerx,
                 self.rect.centery,
-                arc_gen.originator.rect.centerx,
-                arc_gen.originator.rect.centery,
+                HBOX,
+                HBOX
+                # arc_gen.originator.rect.centerx,
+                # arc_gen.originator.rect.centery,
                 # self.rect.centerx,
                 # self.rect.centery
             )
-        elif heard_type in Contact.friends[self.type]:
-            logger.debug(f"Friendly {heard_type}! I, {self.type}, will go closer.")
-            self.heading = angle_of_line(
-                self.rect.centerx - HBOX,
-                self.rect.centery - HBOX,
-                arc_gen.originator.rect.centerx,
-                arc_gen.originator.rect.centery,
-                # self.rect.centerx,
-                # self.rect.centery
-            )
+            # new_heading = (new_heading+360) % 360
+            self.heading = new_heading
+            logger.debug(
+                f"{self.type} hdg chg {prev_heading} to {self.heading}")
         else:
-            logger.debug(f"A {heard_type}, whatever, I, {self.type} don't care.")
-        
+            logger.debug(
+                f"A {heard_type}, whatever, I, {self.type} don't care.")
+
     def __repr__(self):
         return f"{self.type.name} centered at x:{self.rect.centerx} y:{self.rect.centery}, heading:{self.heading} at rate:{self.speed}"
 
@@ -517,7 +526,8 @@ class ArcMgr:
     def arc_to_center_from_xy(self, originator, start_x, start_y, color, arc_type, tags=[]):
         x_offset = start_x - HBOX
         y_offset = start_y - HBOX
-        angle = angle_of_line(start_x, start_y, HBOX, HBOX)  # comes back degrees
+        angle = angle_of_line(start_x, start_y, HBOX,
+                              HBOX)  # comes back degrees
         # logger.debug(f"Angle: {angle}")
         arc_start = radians(angle - 30)  # convert to rads for pygame arc
         arc_end = radians(angle + 30)  # confert to rads for pygame arc
@@ -562,7 +572,7 @@ class ArcMgr:
                     self.screen, arc_details.color, True, points, 1)
 
             pygame.draw.arc(self.screen, *arc_details.iterable(), AWT)
-        #logger.debug(f"arc_type:{arc_gen.arc_type}")
+        # logger.debug(f"arc_type:{arc_gen.arc_type}")
         if arc_gen.arc_type in {ArcType.PING} and not arc_gen.silent:
             collide = pygame.sprite.spritecollide(
                 arc_details, self.contacts, False, pygame.sprite.collide_circle
@@ -570,7 +580,8 @@ class ArcMgr:
             for con in collide:
                 if con not in arc_gen.contacts:
                     con.heard(arc_gen)
-                    logger.debug(f"Arc of type {arc_gen.arc_type} collided contact w tags {arc_gen.tags}")
+                    logger.debug(
+                        f"Arc of type {arc_gen.arc_type} collided contact w tags {arc_gen.tags}")
                     self.arcs.extend(
                         self.arc_to_center_from_xy(
                             con,
@@ -595,6 +606,7 @@ class ArcMgr:
                 pygame.mixer.Sound.play(ping_sounds[arc_gen.arc_type])
                 arc_gen.silent = True
                 self.listener.heard(arc_gen)
+
     def draw(self):
         if self.arcs:
             for arc in self.arcs:
@@ -609,14 +621,14 @@ class ArcMgr:
             if con.detected:
                 if FADEOUT:
                     self.screen.blit(
-                    con.image, (con.last_known_x, con.last_known_y))
+                        con.image, (con.last_known_x, con.last_known_y))
                     con.alpha -= 0.6
                     con.alpha = max(con.alpha, 0)
                     con.image.set_alpha(con.alpha)
                 else:
                     self.screen.blit(con.image, con.rect)
-                # con.alpha < 5:
-                # con.update()
+                    # pygame.draw.line(self.screen, RED, (HBOX,
+                    #                  HBOX), (con.rect.centerx, con.rect.centery))
             if (
                 pygame.math.Vector2(con.rect.centerx, con.rect.centery).distance_to(
                     CENTER
