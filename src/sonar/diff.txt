@@ -1,0 +1,74 @@
+diff --git a/src/sonar/__main__.py b/src/sonar/__main__.py
+index 8a30e3b..1ed78e0 100644
+--- a/src/sonar/__main__.py
++++ b/src/sonar/__main__.py
+@@ -310,11 +310,11 @@ class Contact(pygame.sprite.Sprite):
+         ],
+         ConType.SHARK: [
+             ConType.SHIP,
+-            ConType.SUB,
++            #ConType.SUB,
+         ],
+         ConType.NARWHAL: [
+             ConType.NARWHAL,
+-            ConType.SUB,
++            #ConType.SUB,
+         ],
+         ConType.ORCA: [
+             ConType.ORCA,
+@@ -365,20 +365,24 @@ class Contact(pygame.sprite.Sprite):
+         self.alpha = 255
+         self.last_activity = time.monotonic()
+         self.max_age = 60
+-        self.heading = randint(0, 359)
++        self.heading = 0 #randint(0, 359)
+         self.speed = 3
+         self.last_move = time.monotonic()
+         self.last_known_x = self.rect.x
+         self.last_known_y = self.rect.y
++        self.towards = pygame.Vector2(randint(0,1), randint(0,1))
+ 
+     def update(self):
+         """Continue at set heading and speed."""
+         if time.monotonic() - self.last_move > 0.5:
+             self.last_move = time.monotonic()
+-            new_x = int((self.speed * math.cos(self.heading)) + self.rect.left)
+-            new_y = int((self.speed * math.sin(self.heading)) + self.rect.top)
+-            self.rect.x = new_x
+-            self.rect.y = new_y
++            new_x = int((self.speed * math.cos(radians(self.heading))) + self.rect.left)
++            new_y = int((self.speed * math.sin(radians(self.heading))) + self.rect.top)
++            #self.rect.x = new_x
++            #self.rect.y = new_y
++
++            self.rect.center = self.rect.center + self.towards
++
+             # self.rect.move_ip(new_x, new_y)
+             # logger.debug(
+             #     f"speed:{self.speed} heading:{self.heading} new_x:{new_x} new_y:{new_y}")
+@@ -415,6 +419,12 @@ class Contact(pygame.sprite.Sprite):
+             )
+             # new_heading = (new_heading+360) % 360
+             self.heading = new_heading
++
++            con_vector = pygame.Vector2(self.rect.center)
++            sound_vector = pygame.Vector2((HBOX, HBOX))
++            self.towards = (sound_vector - con_vector).normalize() * self.speed
++            print(self.towards)
++
+             logger.debug(
+                 f"{self.type} hdg chg {prev_heading} to {self.heading}")
+         else:
+@@ -441,9 +451,10 @@ class ArcMgr:
+         angle = randint(0, 359)
+         radius = randint(200, HBOX)
+         # radius = HBOX - 40
+-        x = radius * math.cos(angle) + HBOX
+-        y = radius * math.sin(angle) + HBOX
++        x = radius * math.cos(radians(angle)) + HBOX
++        y = radius * math.sin(radians(angle)) + HBOX
+         new_contact = Contact(x, y, choices(con_types, con_weights, k=1)[0])
++        # new_contact = Contact(50, (HBOX*1.5), choices(con_types, con_weights, k=1)[0])
+         self.contacts.append(new_contact)
+         logger.debug(f"Random contact: {new_contact}")
+ 
