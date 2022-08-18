@@ -30,7 +30,10 @@ from pygame.locals import K_v
 from pygame.locals import K_w
 from rich.traceback import install
 
-import contact
+# import contact
+import arc
+import constants
+import snd
 
 install(show_locals=True)
 
@@ -52,96 +55,15 @@ if ON_RPI:
     led_pin.switch_to_output(value=True)
     button_pin.direction = digitalio.Direction.INPUT
 
-pygame.mixer.pre_init(44100, -16, 1, 256)
 pygame.init()
 
-EXCLUSIVE_PING = False
-DEBUG = False
-FADEOUT = False
 
-# 0,0 is upper left of screen
-SCREEN_WIDTH = 1024
-SCREEN_HEIGHT = 768
-PI = math.pi
-BOX = 768  # Size of bounding box
-HBOX = BOX // 2
-CENTER = (HBOX, HBOX)  # Center of box
-ABOXL = int(HBOX * 1)  # Arc box limit so they leave screen
-RWT = 2  # Reticle line weight
-ARC_SPEED = 4
-AWT = 8  # Arc line weight
-RCNT = 20  # Center circle diameter
-BG_BLUE = (24, 53, 76)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-HRETL = pygame.Rect(RWT, HBOX - RWT / 2, BOX - (RWT * 2), RWT)
-VRETL = pygame.Rect(HBOX - RWT / 2, RWT, RWT, BOX - (RWT * 2))
-TOP_SPEED = 10
-RANGE = HBOX + (75 / 2)  # Range outside of which to delete contact
-SUB_ICON = pygame.image.load("big_sub.png")
-SUB_LOCATION = (HBOX - 50, HBOX - 40)
+pinging = False
 
 
-class ArcType(Enum):
-    PING = auto()
-    PING_ECHO = auto()
-    PINGA = auto()
-    PINGA_ECHO = auto()
-    PINGB = auto()
-    PINGB_ECHO = auto()
-    PINGC = auto()
-    PINGC_ECHO = auto()
-    BIO = auto()
-    BIO_ECHO = auto()
 
 
-ping = pygame.mixer.Sound("high_ping.wav")
-r_ping = pygame.mixer.Sound("high_ping.wav")
-g_ping = pygame.mixer.Sound("high_ping.wav")
-b_ping = pygame.mixer.Sound("high_ping.wav")
 
-ping_sounds = {
-    ArcType.PING: pygame.mixer.Sound("high_ping.wav"),
-    ArcType.PING_ECHO: pygame.mixer.Sound("high_ping.wav"),
-    ArcType.PINGA: pygame.mixer.Sound("high_ping.wav"),
-    ArcType.PINGA_ECHO: pygame.mixer.Sound("high_ping.wav"),
-    ArcType.PINGB: pygame.mixer.Sound("high_ping.wav"),
-    ArcType.PINGB_ECHO: pygame.mixer.Sound("high_ping.wav"),
-    ArcType.PINGC: pygame.mixer.Sound("high_ping.wav"),
-    ArcType.PINGC_ECHO: pygame.mixer.Sound("high_ping.wav"),
-}
-
-dolphin_sounds = {
-    "hi": pygame.mixer.Sound("high_ping.wav"),
-    "love": pygame.mixer.Sound("high_ping.wav"),
-    "food": pygame.mixer.Sound("high_ping.wav"),
-}
-
-whale_sounds = {
-    "hi": pygame.mixer.Sound("high_ping.wav"),
-    "love": pygame.mixer.Sound("high_ping.wav"),
-    "food": pygame.mixer.Sound("high_ping.wav"),
-}
-
-animal_sounds = {
-    "dolphin": dolphin_sounds,
-    "whale": whale_sounds,
-}
-
-
-def angle_of_vector(x, y):
-    # return math.degrees(math.atan2(-y, x))            # 1: with math.atan
-    # 2: with pygame.math.Vector2.angle_to
-    return pygame.math.Vector2(x, y).angle_to((1, 0))
-
-
-def angle_of_line(x1, y1, x2, y2):
-    # return math.degrees(math.atan2(-y1-y2, x2-x1))    # 1: math.atan
-    # 2: pygame.math.Vector2.angle_to
-    return angle_of_vector(x2 - x1, y2 - y1)
 
 
 def main() -> None:
@@ -149,8 +71,8 @@ def main() -> None:
 
     # Set up the drawing window
     # screen = pygame.display.set_mode([BOX, BOX])
-    screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
-    arc_mgr = ArcMgr(screen)
+    screen = pygame.display.set_mode([constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT])
+    arc_mgr = arc.ArcMgr(screen)
     pygame.mouse.set_visible(False)
     # Run until quit
     running = True
@@ -163,11 +85,11 @@ def main() -> None:
                 running = False
             elif event.type == KEYDOWN:
                 if event.key == K_r:
-                    arc_mgr.start_ping(RED)
+                    start_ping(arc_mgr, constants.RED)
                 if event.key == K_g:
-                    arc_mgr.start_ping(GREEN)
+                    start_ping(arc_mgr, constants.GREEN)
                 if event.key == K_b:
-                    arc_mgr.start_ping(BLACK)
+                    start_ping(arc_mgr, constants.BLACK)
                 if event.key == K_t:
                     arc_mgr.rand_contact()
                     # angle = randint(0, 359)
@@ -182,7 +104,7 @@ def main() -> None:
                     running = False
 
         # Fill the background with blue
-        screen.fill(BG_BLUE)
+        screen.fill(constants.BG_BLUE)
 
         draw_reticle(screen)
         arc_mgr.draw()
@@ -198,296 +120,35 @@ def main() -> None:
 
 def draw_reticle(scrn):
     # Outer White Circle
-    pygame.draw.circle(scrn, WHITE, CENTER, BOX // 2 - RWT)
+    pygame.draw.circle(scrn, constants.WHITE, constants.CENTER, constants.BOX // 2 - constants.RWT)
 
     # Inner Blue Circle
-    pygame.draw.circle(scrn, BG_BLUE, CENTER, BOX // 2 - (RWT * 2))
+    pygame.draw.circle(scrn, constants.BG_BLUE, constants.CENTER, constants.BOX // 2 - (constants.RWT * 2))
 
     # Reticle crossing lines
-    pygame.draw.rect(scrn, WHITE, HRETL)
-    pygame.draw.rect(scrn, WHITE, VRETL)
+    pygame.draw.rect(scrn, constants.WHITE, constants.HRETL)
+    pygame.draw.rect(scrn, constants.WHITE, constants.VRETL)
 
     # Central Blanking circle
-    pygame.draw.circle(scrn, BG_BLUE, CENTER, 60)  # RCNT + RWT)
+    pygame.draw.circle(scrn, constants.BG_BLUE, constants.CENTER, 60)  # RCNT + RWT)
 
     # Central circle
     # pygame.draw.circle(scrn, WHITE, CENTER, RCNT)
 
-    scrn.blit(SUB_ICON, SUB_LOCATION)
+    scrn.blit(constants.SUB_ICON, constants.SUB_LOCATION)
 
 
-class Arc:
-    """Information to draw a single arc."""
-
-    def __init__(self, color, rect, start, end):
-        """Initialize."""
-        self.color = color
-        self.rect = rect
-        self.start = start
-        self.end = end
-        self.radius = self.rect.width // 2
-
-    def iterable(self):
-        return (self.color, self.rect, self.start, self.end)
-
-
-class ArcGen:
-    def __init__(self, generator, arc_type, originator, silent=False, tags=[]):
-        self.contacts = []
-        self.generator = generator
-        self.arc_type = arc_type
-        self.silent = silent
-        self.tags = tags
-        self.originator = originator
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        return next(self.generator)
-
-
-
-
-
-class ArcMgr:
-    def __init__(self, scrn):
-        self.screen = scrn
-        self.pinging = False
-        self.biosound = False
-        self.arcs = []
-        self.contacts = []
-        self.listener = contact.Contact(HBOX - 50, HBOX - 40, contact.ConType.SUB)
-        self.listener.rect.width = 100
-        self.listener.rect.height = 100
-        self.listener.radius = 50
-
-    def rand_contact(self):
-        angle = randint(0, 359)
-        radius = randint(200, HBOX)
-        # radius = HBOX - 40
-        x = radius * math.cos(radians(angle)) + HBOX
-        y = radius * math.sin(radians(angle)) + HBOX
-        new_contact = contact.Contact(x, y, choices(contact.con_types, contact.con_weights, k=1)[0])
-        # new_contact = Contact(50, (HBOX*1.5), choices(con_types, con_weights, k=1)[0])
-        self.contacts.append(new_contact)
-        logger.debug(f"Random contact: {new_contact}")
-
-    def arcs_from_xy(
-        self, originator, start_x=HBOX, start_y=HBOX, color=RED, arc_type=ArcType.PING, tags=[]
-    ):
-        x_offset = start_x - HBOX
-        y_offset = start_y - HBOX
-        return [  # Upper right
-            ArcGen(
-                (
-                    Arc(
-                        color,
-                        pygame.Rect(
-                            HBOX - x + x_offset, HBOX - x + y_offset, 2 * x, 2 * x
-                        ),
-                        0 + 0.2,
-                        PI / 2 - 0.2,
-                    )
-                    for x in range(AWT, ABOXL, ARC_SPEED)
-                ),
-                arc_type,
-                originator,
-                silent=True,  # Only one of these four should cause an audible echo
-                tags=tags,
-            ),
-            ArcGen(
-                (
-                    Arc(
-                        color,
-                        pygame.Rect(
-                            HBOX - x + x_offset, HBOX - x + y_offset, 2 * x, 2 * x
-                        ),
-                        PI / 2 + 0.2,
-                        PI - 0.2,
-                    )
-                    for x in range(AWT, ABOXL, ARC_SPEED)
-                ),
-                arc_type,
-                originator,
-                silent=True,
-                tags=tags,
-            ),
-            ArcGen(
-                (
-                    Arc(
-                        color,
-                        pygame.Rect(
-                            HBOX - x + x_offset, HBOX - x + y_offset, 2 * x, 2 * x
-                        ),
-                        PI + 0.2,
-                        3 * PI / 2 - 0.2,
-                    )
-                    for x in range(AWT, ABOXL, ARC_SPEED)
-                ),
-                arc_type,
-                originator,
-                silent=True,
-                tags=tags,
-            ),
-            ArcGen(
-                (
-                    Arc(
-                        color,
-                        pygame.Rect(
-                            HBOX - x + x_offset, HBOX - x + y_offset, 2 * x, 2 * x
-                        ),
-                        3 * PI / 2 + 0.2,
-                        2 * PI - 0.2,
-                    )
-                    for x in range(AWT, ABOXL, ARC_SPEED)
-                ),
-                arc_type,
-                originator,
-                silent=False,  # This one will cause an audible echo
-                tags=tags,
-            ),
-        ]
-
-    def arc_to_center_from_xy(self, originator, start_x, start_y, color, arc_type, tags=[]):
-        x_offset = start_x - HBOX
-        y_offset = start_y - HBOX
-        angle = angle_of_line(start_x, start_y, HBOX,
-                              HBOX)  # comes back degrees
-        # logger.debug(f"Angle: {angle}")
-        arc_start = radians(angle - 30)  # convert to rads for pygame arc
-        arc_end = radians(angle + 30)  # confert to rads for pygame arc
-        return [
-            ArcGen(
-                (
-                    Arc(
-                        color,
-                        pygame.Rect(
-                            HBOX - x + x_offset, HBOX - x + y_offset, 2 * x, 2 * x
-                        ),
-                        arc_start,
-                        arc_end,
-                    )
-                    for x in range(AWT, ABOXL, ARC_SPEED)
-                ),
-                arc_type=arc_type,
-                originator=originator,
-                silent=False,
-                tags=tags,
-            ),
-        ]
-
-    def draw_single_arc(self, arc_gen):
-        arc_details = next(arc_gen)
-        if isinstance(arc_details, contact.Contact):
-            self.contacts.append(arc_details)
-        else:
-            points = [
-                (arc_details.rect[0], arc_details.rect[1]),
-                (arc_details.rect[0],
-                 arc_details.rect[1] + arc_details.rect[3]),
-                (
-                    arc_details.rect[0] + arc_details.rect[2],
-                    arc_details.rect[1] + arc_details.rect[3],
-                ),
-                (arc_details.rect[0] +
-                 arc_details.rect[2], arc_details.rect[1]),
-            ]
-            if DEBUG:
-                pygame.draw.lines(
-                    self.screen, arc_details.color, True, points, 1)
-
-            pygame.draw.arc(self.screen, *arc_details.iterable(), AWT)
-        # logger.debug(f"arc_type:{arc_gen.arc_type}")
-        if arc_gen.arc_type in {ArcType.PING} and not arc_gen.silent:
-            collide = pygame.sprite.spritecollide(
-                arc_details, self.contacts, False, pygame.sprite.collide_circle
-            )
-            for con in collide:
-                if con not in arc_gen.contacts:
-                    con.heard(arc_gen)
-                    logger.debug(
-                        f"Arc of type {arc_gen.arc_type} collided contact w tags {arc_gen.tags}")
-                    self.arcs.extend(
-                        self.arc_to_center_from_xy(
-                            con,
-                            con.rect.centerx,
-                            con.rect.centery,
-                            arc_details.color,
-                            ArcType.PING_ECHO,
-                        )
-                    )
-                    arc_gen.contacts.append(con)
-                    con.detected = True
-                    con.alpha = 255
-                    con.last_known_x = con.rect.x
-                    con.last_known_y = con.rect.y
-        elif arc_gen.arc_type in {ArcType.PING_ECHO} and not arc_gen.silent:
-            if pygame.sprite.spritecollide(
-                arc_details, [
-                    self.listener], False, pygame.sprite.collide_circle
-            ):
-                # Echo has come back to submarine.
-                # logger.debug(f"Playing sound: {arc_gen.arc_type.name}")
-                pygame.mixer.Sound.play(ping_sounds[arc_gen.arc_type])
-                arc_gen.silent = True
-                self.listener.heard(arc_gen)
-
-    def draw(self):
-        if self.arcs:
-            for arc in self.arcs:
-                try:
-                    self.draw_single_arc(arc)
-                except StopIteration:
-                    self.arcs.remove(arc)
-        else:
-            self.pinging = False
-        for con in self.contacts:
-            con.update()
-            if con.detected:
-                if FADEOUT:
-                    self.screen.blit(
-                        con.image, (con.last_known_x, con.last_known_y))
-                    con.alpha -= 0.6
-                    con.alpha = max(con.alpha, 0)
-                    con.image.set_alpha(con.alpha)
-                else:
-                    self.screen.blit(con.image, con.rect)
-                    # pygame.draw.line(self.screen, RED, (HBOX,
-                    #                  HBOX), (con.rect.centerx, con.rect.centery))
-            if (
-                pygame.math.Vector2(con.rect.centerx, con.rect.centery).distance_to(
-                    CENTER
-                )
-                > RANGE
-            ):
-                # if time.monotonic() - con.last_activity > con.max_age:
-                self.contacts.remove(con)
-                del con
-                logger.debug("Contact out of range, deleted.")
-
-            if DEBUG:
-                pygame.draw.rect(
-                    self.screen,
-                    RED,
-                    pygame.Rect(
-                        con.rect.left, con.rect.top, con.rect.width, con.rect.height
-                    ),
-                    2,
-                )
-
-    def start_ping(self, color=RED, sound=ping):
-        if self.pinging and EXCLUSIVE_PING:
-            logger.debug("Ping requested, but already pinging.")
-            return
-        else:
-            # logger.debug("Commencing ping.")
-            self.pinging = True
-            pygame.mixer.Sound.play(sound)
-            # logger.debug(f"Number of channels: {sound.get_num_channels()}")
-            self.arcs.extend(self.arcs_from_xy(
-                self.listener, HBOX, HBOX, color, ArcType.PING))
-
+def start_ping(arc_mgr, color=constants.RED, sound=snd.ping):
+    # if pinging and constants.EXCLUSIVE_PING:
+    #     logger.debug("Ping requested, but already pinging.")
+    #     return
+    # else:
+    # logger.debug("Commencing ping.")
+    pinging = True
+    pygame.mixer.Sound.play(sound)
+    # logger.debug(f"Number of channels: {sound.get_num_channels()}")
+    arc_mgr.arcs.extend(arc_mgr.arcs_from_xy(
+        arc_mgr.listener, constants.HBOX, constants.HBOX, color, 'ping_a'))
 
 if __name__ == "__main__":
     main()
