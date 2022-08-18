@@ -8,6 +8,7 @@ from math import atan2
 from math import degrees
 from math import radians
 from random import uniform, randint, choices
+from os import uname
 
 import pygame
 from loguru import logger
@@ -32,6 +33,23 @@ from rich.traceback import install
 
 install(show_locals=True)
 
+architecture = uname()[4][:3]
+print(f"Running on architecture: {architecture}")
+if architecture.lower() == "arm":
+    import board
+    import digitalio
+    import adafruit_aw9523
+    ON_RPI = True
+else:
+    ON_RPI = False
+
+if ON_RPI:
+    i2c = board.I2C()
+    aw = adafruit_aw9523.AW9523(i2c)
+    led_pin = aw.get_pin(0)
+    button_pin = aw.get_pin(1)
+    led_pin.switch_to_output(value=True)
+    button_pin.direction = digitalio.Direction.INPUT
 
 pygame.mixer.pre_init(44100, -16, 1, 256)
 pygame.init()
@@ -137,7 +155,8 @@ def main() -> None:
     running = True
 
     while running:
-
+        if ON_RPI:
+            led_pin.value = button_pin.value
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
