@@ -7,7 +7,7 @@ from itertools import chain
 from math import atan2
 from math import degrees
 from math import radians
-from random import randint, choices
+from random import uniform, randint, choices
 
 import pygame
 from loguru import logger
@@ -299,26 +299,26 @@ class Contact(pygame.sprite.Sprite):
             ConType.WHALE,
             ConType.ORCA,
             ConType.DOLPHIN,
-            ConType.SUB,
+            # ConType.SUB,
         ],
         ConType.DOLPHIN: [
             ConType.DOLPHIN,
             ConType.ORCA,
             ConType.NARWHAL,
             ConType.SHIP,
-            ConType.SUB,
+            # ConType.SUB,
         ],
         ConType.SHARK: [
             ConType.SHIP,
-            #ConType.SUB,
+            # ConType.SUB,
         ],
         ConType.NARWHAL: [
             ConType.NARWHAL,
-            #ConType.SUB,
+            # ConType.SUB,
         ],
         ConType.ORCA: [
             ConType.ORCA,
-            ConType.SUB,
+            # ConType.SUB,
         ]
     }
 
@@ -365,19 +365,21 @@ class Contact(pygame.sprite.Sprite):
         self.alpha = 255
         self.last_activity = time.monotonic()
         self.max_age = 60
-        self.heading = 0 #randint(0, 359)
+        self.heading = 0  # randint(0, 359)
         self.speed = 3
         self.last_move = time.monotonic()
         self.last_known_x = self.rect.x
         self.last_known_y = self.rect.y
-        self.towards = pygame.Vector2(randint(0,1), randint(0,1))
+        self.towards = pygame.Vector2(uniform(-2, 2), uniform(-2, 2))
 
     def update(self):
         """Continue at set heading and speed."""
         if time.monotonic() - self.last_move > 0.5:
             self.last_move = time.monotonic()
-            new_x = int((self.speed * math.cos(radians(self.heading))) + self.rect.left)
-            new_y = int((self.speed * math.sin(radians(self.heading))) + self.rect.top)
+            new_x = int(
+                (self.speed * math.cos(radians(self.heading))) + self.rect.left)
+            new_y = int(
+                (self.speed * math.sin(radians(self.heading))) + self.rect.top)
             #self.rect.x = new_x
             #self.rect.y = new_y
 
@@ -432,7 +434,8 @@ class Contact(pygame.sprite.Sprite):
                 f"A {heard_type}, whatever, I, {self.type} don't care.")
 
     def __repr__(self):
-        return f"{self.type.name} centered at x:{self.rect.centerx} y:{self.rect.centery}, heading:{self.heading} at rate:{self.speed}"
+        # heading:{self.heading} at rate:{self.speed}"
+        return f"{self.type.name} centered at x:{self.rect.centerx} y:{self.rect.centery}, towards:{self.towards}"
 
 
 class ArcMgr:
