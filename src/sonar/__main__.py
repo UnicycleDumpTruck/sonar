@@ -1,13 +1,5 @@
 """Main program file for sonar interface."""
-import math
 import time
-from enum import Enum
-from enum import auto
-from itertools import chain
-from math import atan2
-from math import degrees
-from math import radians
-from random import uniform, randint, choices
 from os import uname
 
 import pygame
@@ -58,12 +50,7 @@ if ON_RPI:
 pygame.init()
 
 
-pinging = False
-
-
-
-
-
+# pinging = False
 
 
 def main() -> None:
@@ -144,7 +131,7 @@ def start_ping(arc_mgr, color=constants.RED, sound=snd.ping):
     #     return
     # else:
     # logger.debug("Commencing ping.")
-    pinging = True
+    # pinging = True
     pygame.mixer.Sound.play(sound)
     # logger.debug(f"Number of channels: {sound.get_num_channels()}")
     arc_mgr.arcs.extend(arc_mgr.arcs_from_xy(

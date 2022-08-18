@@ -9,28 +9,11 @@ import constants
 import snd
 
 def angle_of_vector(x, y):
-    # return math.degrees(math.atan2(-y, x))            # 1: with math.atan
-    # 2: with pygame.math.Vector2.angle_to
     return pygame.math.Vector2(x, y).angle_to((1, 0))
 
 
 def angle_of_line(x1, y1, x2, y2):
-    # return math.degrees(math.atan2(-y1-y2, x2-x1))    # 1: math.atan
-    # 2: pygame.math.Vector2.angle_to
     return angle_of_vector(x2 - x1, y2 - y1)
-
-
-# class ArcType(Enum):
-#     PING = auto()
-#     PING_ECHO = auto()
-#     PINGA = auto()
-#     PINGA_ECHO = auto()
-#     PINGB = auto()
-#     PINGB_ECHO = auto()
-#     PINGC = auto()
-#     PINGC_ECHO = auto()
-#     BIO = auto()
-#     BIO_ECHO = auto()
 
 
 class Arc:
