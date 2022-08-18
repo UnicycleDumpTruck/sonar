@@ -32,20 +32,13 @@ install(show_locals=True)
 architecture = uname()[4][:3]
 print(f"Running on architecture: {architecture}")
 if architecture.lower() == "arm":
-    import board
-    import digitalio
-    import adafruit_aw9523
+    import button
     ON_RPI = True
 else:
     ON_RPI = False
 
 if ON_RPI:
-    i2c = board.I2C()
-    aw = adafruit_aw9523.AW9523(i2c)
-    led_pin = aw.get_pin(0)
-    button_pin = aw.get_pin(1)
-    led_pin.switch_to_output(value=True)
-    button_pin.direction = digitalio.Direction.INPUT
+    btn_mgr = button.ButtonMgr()
 
 pygame.init()
 
@@ -66,7 +59,7 @@ def main() -> None:
 
     while running:
         if ON_RPI:
-            led_pin.value = button_pin.value
+            btn_mgr.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False

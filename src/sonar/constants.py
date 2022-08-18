@@ -28,5 +28,5 @@ HRETL = pygame.Rect(RWT, HBOX - RWT / 2, BOX - (RWT * 2), RWT)
 VRETL = pygame.Rect(HBOX - RWT / 2, RWT, RWT, BOX - (RWT * 2))
 TOP_SPEED = 10
 RANGE = HBOX + (75 / 2)  # Range outside of which to delete contact
-SUB_ICON = pygame.image.load("big_sub.png")
+SUB_ICON = pygame.image.load("../../images/big_sub.png")
 SUB_LOCATION = (HBOX - 50, HBOX - 40)
