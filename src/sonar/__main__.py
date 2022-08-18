@@ -30,6 +30,7 @@ from pygame.locals import K_v
 from pygame.locals import K_w
 from rich.traceback import install
 
+import contact
 
 install(show_locals=True)
 
@@ -246,215 +247,7 @@ class ArcGen:
         return next(self.generator)
 
 
-class ConType(Enum):
-    UNK = auto()
-    SUB = auto()
-    SHIP = auto()
-    WHALE = auto()
-    DOLPHIN = auto()
-    SHARK = auto()
-    NARWHAL = auto()
-    ORCA = auto()
 
-
-con_types = (
-    ConType.UNK,
-    ConType.SUB,
-    ConType.SHIP,
-    ConType.WHALE,
-    ConType.DOLPHIN,
-    ConType.SHARK,
-    ConType.NARWHAL,
-    ConType.ORCA,
-)
-
-con_weights = (
-    0,  # UNK
-    5,  # SUB
-    5,  # SHIP
-    12,  # WHALE
-    15,  # DOLPHIN
-    10,  # SHARK
-    10,  # NARWHAL
-    12,  # ORCA
-)
-
-con_image_filenames = {
-    ConType.UNK: "question.png",
-    ConType.SHIP: "ship.png",
-    ConType.SUB: "sub.png",
-    ConType.WHALE: "whale.png",
-    ConType.DOLPHIN: "dolphin.png",
-    ConType.SHARK: "shark.png",
-    ConType.NARWHAL: "narwhal.png",
-    ConType.ORCA: "whale.png"
-}
-
-
-class Contact(pygame.sprite.Sprite):
-    """Sonar contact."""
-
-    # Values are what the key will move toward:
-    friends = {
-        ConType.UNK: [],
-        ConType.SHIP: [
-            ConType.DOLPHIN,
-            ConType.WHALE,
-            ConType.SHARK,
-            ConType.SUB,
-            ConType.NARWHAL,
-            ConType.ORCA,
-        ],
-        ConType.SUB: [
-            ConType.SHIP,
-            ConType.SUB,
-            ConType.DOLPHIN,
-            ConType.SHARK,
-            ConType.WHALE,
-            ConType.NARWHAL,
-            ConType.ORCA,
-        ],
-        ConType.WHALE: [
-            ConType.WHALE,
-            ConType.ORCA,
-            ConType.DOLPHIN,
-            # ConType.SUB,
-        ],
-        ConType.DOLPHIN: [
-            ConType.DOLPHIN,
-            ConType.ORCA,
-            ConType.NARWHAL,
-            ConType.SHIP,
-            # ConType.SUB,
-        ],
-        ConType.SHARK: [
-            ConType.SHIP,
-            # ConType.SUB,
-        ],
-        ConType.NARWHAL: [
-            ConType.NARWHAL,
-            # ConType.SUB,
-        ],
-        ConType.ORCA: [
-            ConType.ORCA,
-            # ConType.SUB,
-        ]
-    }
-
-    # Values are what the key will flee:
-    foes = {
-        ConType.UNK: [],
-        ConType.DOLPHIN: [
-            ConType.SHARK,
-        ],
-        ConType.SHIP: [],
-        ConType.WHALE: [
-            ConType.SHARK,
-            ConType.SHIP,
-        ],
-        ConType.SUB: [],
-        ConType.SHARK: [
-            ConType.ORCA,
-            ConType.DOLPHIN
-        ],
-        ConType.NARWHAL: [
-            ConType.NARWHAL
-        ],
-        ConType.ORCA: [
-            ConType.ORCA
-        ],
-    }
-
-    # TODO: movement toward good sounds away from bad
-    # TODO: Categorize sounds good, bad, indifferent
-    # TODO: wander away after period
-    def __init__(self, x, y, type=ConType.UNK):
-        """Initialize."""
-        super().__init__()
-        self.surf = pygame.Surface((75, 75))
-        self.surf.fill(WHITE)
-        self.rect = self.surf.get_rect()
-        self.rect.centerx = x
-        self.rect.centery = y
-        self.radius = self.rect.width // 2
-        self.detected = False
-        self.identified = False
-        self.image = pygame.image.load(con_image_filenames[type])
-        self.type = type
-        self.alpha = 255
-        self.last_activity = time.monotonic()
-        self.max_age = 60
-        self.heading = 0  # randint(0, 359)
-        self.speed = 3
-        self.last_move = time.monotonic()
-        self.last_known_x = self.rect.x
-        self.last_known_y = self.rect.y
-        self.towards = pygame.Vector2(uniform(-2, 2), uniform(-2, 2))
-
-    def update(self):
-        """Continue at set heading and speed."""
-        if time.monotonic() - self.last_move > 0.5:
-            self.last_move = time.monotonic()
-            new_x = int(
-                (self.speed * math.cos(radians(self.heading))) + self.rect.left)
-            new_y = int(
-                (self.speed * math.sin(radians(self.heading))) + self.rect.top)
-            #self.rect.x = new_x
-            #self.rect.y = new_y
-
-            self.rect.center = self.rect.center + self.towards
-
-            # self.rect.move_ip(new_x, new_y)
-            # logger.debug(
-            #     f"speed:{self.speed} heading:{self.heading} new_x:{new_x} new_y:{new_y}")
-
-    def heard(self, arc_gen):
-        """Process sound and change heading and speed accordingly."""
-        # logger.debug(
-        #     f"{self} heard {arc_gen.arc_type} w tags {arc_gen.tags} originating from {arc_gen.originator}")
-        heard_type = arc_gen.originator.type
-        # if heard_type in Contact.foes[self.type]:
-        #     logger.debug(
-        #         f"Foe: I, {self.type} am afraid of {arc_gen.originator.type}!")
-        #     self.heading = angle_of_line(
-        #         self.rect.centerx,
-        #         self.rect.centery,
-        #         arc_gen.originator.rect.centerx,
-        #         arc_gen.originator.rect.centery,
-        #         # self.rect.centerx,
-        #         # self.rect.centery
-        #     )
-        if heard_type in Contact.friends[self.type]:
-            # logger.debug(
-            #     f"Friendly {heard_type}! I, {self.type}, will go closer.")
-            prev_heading = self.heading
-            new_heading = angle_of_line(
-                self.rect.centerx,
-                self.rect.centery,
-                HBOX,
-                HBOX
-                # arc_gen.originator.rect.centerx,
-                # arc_gen.originator.rect.centery,
-                # self.rect.centerx,
-                # self.rect.centery
-            )
-            # new_heading = (new_heading+360) % 360
-            self.heading = new_heading
-
-            con_vector = pygame.Vector2(self.rect.center)
-            sound_vector = pygame.Vector2((HBOX, HBOX))
-            self.towards = (sound_vector - con_vector).normalize() * self.speed
-            print(self.towards)
-
-            logger.debug(
-                f"{self.type} hdg chg {prev_heading} to {self.heading}")
-        else:
-            logger.debug(
-                f"A {heard_type}, whatever, I, {self.type} don't care.")
-
-    def __repr__(self):
-        # heading:{self.heading} at rate:{self.speed}"
-        return f"{self.type.name} centered at x:{self.rect.centerx} y:{self.rect.centery}, towards:{self.towards}"
 
 
 class ArcMgr:
@@ -464,7 +257,7 @@ class ArcMgr:
         self.biosound = False
         self.arcs = []
         self.contacts = []
-        self.listener = Contact(HBOX - 50, HBOX - 40, ConType.SUB)
+        self.listener = contact.Contact(HBOX - 50, HBOX - 40, contact.ConType.SUB)
         self.listener.rect.width = 100
         self.listener.rect.height = 100
         self.listener.radius = 50
@@ -475,7 +268,7 @@ class ArcMgr:
         # radius = HBOX - 40
         x = radius * math.cos(radians(angle)) + HBOX
         y = radius * math.sin(radians(angle)) + HBOX
-        new_contact = Contact(x, y, choices(con_types, con_weights, k=1)[0])
+        new_contact = contact.Contact(x, y, choices(contact.con_types, contact.con_weights, k=1)[0])
         # new_contact = Contact(50, (HBOX*1.5), choices(con_types, con_weights, k=1)[0])
         self.contacts.append(new_contact)
         logger.debug(f"Random contact: {new_contact}")
@@ -586,7 +379,7 @@ class ArcMgr:
 
     def draw_single_arc(self, arc_gen):
         arc_details = next(arc_gen)
-        if isinstance(arc_details, Contact):
+        if isinstance(arc_details, contact.Contact):
             self.contacts.append(arc_details)
         else:
             points = [
