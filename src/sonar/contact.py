@@ -3,7 +3,7 @@ import time
 from random import uniform
 from loguru import logger
 import pygame
-from random import choice
+from random import choice, randint
 
 
 con_types = (
@@ -137,30 +137,34 @@ class Contact(pygame.sprite.Sprite):
         self.speed = 3
         self.last_move = time.monotonic()
         self.last_sound = time.monotonic()
+        self.time_to_next_sound = randint(8,32)
         self.last_known_x = self.rect.x
         self.last_known_y = self.rect.y
         self.towards = pygame.Vector2(uniform(-2, 2), uniform(-2, 2))
 
     def update(self):
         """Continue at set heading and speed. Return true if time to play sound."""
-        if time.monotonic() - self.last_move > 0.5:
+        if (time.monotonic() - self.last_move) > 0.5:
             self.last_move = time.monotonic()
             self.rect.center = self.rect.center + self.towards
-        if time.monotonic() - self.last_sound > 4 + choice([0,2,4,8]):
+
+        if (time.monotonic() - self.last_sound) > self.time_to_next_sound:
             self.last_sound = time.monotonic()
+            self.time_to_next_sound = randint(8,32)
             return True
         return False
 
     def heard(self, arc_gen):
         """Process sound and change heading and speed accordingly."""
-        heard_type = arc_gen.originator.type
+        # heard_type = arc_gen.originator.type
+        heard_type = arc_gen.arc_type.split('_')[0]
         if heard_type in Contact.foes[self.type]:
             con_vector = pygame.Vector2(self.rect.center)
             sound_vector = pygame.Vector2((arc_gen.originator.rect.centerx, arc_gen.originator.rect.centery,))
             direction = (con_vector - sound_vector)
             if direction.length() != 0:
                 self.towards = direction.normalize() * self.speed
-                logger.debug(f"{self.type} fleeing {arc_gen.originator.type} in direction: {self.towards}")
+                logger.debug(f"{self.type} fleeing {heard_type} noise from {arc_gen.originator.type} in direction: {self.towards}")
             else:
                 logger.warning(f"Direction vector == 0. {self.type} on top of {arc_gen.originator.type}.")  
 
@@ -171,13 +175,13 @@ class Contact(pygame.sprite.Sprite):
             direction = (sound_vector - con_vector)
             if direction.length() != 0:
                 self.towards = direction.normalize() * self.speed
-                logger.debug(f"{self.type} chasing {arc_gen.originator.type} in direction: {self.towards}")
+                logger.debug(f"{self.type} chasing {heard_type} noise from {arc_gen.originator.type} in direction: {self.towards}")
             else:
                 logger.warning(f"Direction vector == 0. {self.type} on top of {arc_gen.originator.type}.")  
 
         else:
             logger.debug(
-                f"{self.type} heard {heard_type} but doesn't care.")
+                f"{self.type} heard {heard_type} from {arc_gen.originator.type} noise but doesn't care.")
 
     def __repr__(self):
         return f"{self.type} centered at x:{self.rect.centerx} y:{self.rect.centery}, towards:{self.towards}"

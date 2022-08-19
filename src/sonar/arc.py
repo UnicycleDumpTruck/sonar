@@ -53,7 +53,7 @@ class ArcMgr:
         self.biosound = False
         self.arcs = []
         self.contacts = []
-        self.listener = contact.Contact(constants.HBOX - 50, constants.HBOX - 40, 'sub')
+        self.listener = contact.Contact(constants.HBOX - 12, constants.HBOX -12, 'sub') # was x - 50, y - 40
         self.listener.rect.width = 100
         self.listener.rect.height = 100
         self.listener.radius = 50
@@ -195,7 +195,8 @@ class ArcMgr:
 
             pygame.draw.arc(self.screen, *arc_details.iterable(), constants.AWT)
         # logger.debug(f"arc_type:{arc_gen.arc_type}")
-        if arc_gen.arc_type in {'ping_a', 'ping_b'} and not arc_gen.silent:
+        # if arc_gen.arc_type in {'ping_a', 'ping_b'} and not arc_gen.silent:
+        if 'echo' not in arc_gen.arc_type and not arc_gen.silent:
             collide = pygame.sprite.spritecollide(
                 arc_details, self.contacts, False, pygame.sprite.collide_circle
             )

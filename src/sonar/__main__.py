@@ -72,8 +72,9 @@ def main() -> None:
                     start_ping(arc_mgr, constants.BLACK)
                 if event.key == pygame.K_t:
                     arc_mgr.rand_contact()
+
                 if event.key == pygame.K_d:
-                    start_ping(arc_mgr, constants.BLACK)
+                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, 'dolphin_hi')
                 if event.key == pygame.K_n:
                     start_ping(arc_mgr, constants.BLACK)
                 if event.key == pygame.K_o:
@@ -137,8 +138,8 @@ def sound_from(arc_mgr, contact, color, sound):
     pygame.mixer.Sound.play(snd.sounds[sound])
     arc_mgr.arcs.extend(arc_mgr.arcs_from_xy(
         contact,
-        contact.rect.x,
-        contact.rect.y,
+        contact.rect.centerx,
+        contact.rect.centery,
         color,
         sound,
     ))
