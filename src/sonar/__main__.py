@@ -4,22 +4,22 @@ from os import uname
 
 import pygame
 from loguru import logger
-from pygame.locals import K_DOWN
-from pygame.locals import K_ESCAPE
-from pygame.locals import K_LEFT
-from pygame.locals import K_RIGHT
-from pygame.locals import K_UP
-from pygame.locals import KEYDOWN
-from pygame.locals import QUIT
-from pygame.locals import K_b
-from pygame.locals import K_e
-from pygame.locals import K_g
-from pygame.locals import K_o
-from pygame.locals import K_p
-from pygame.locals import K_r
-from pygame.locals import K_t
-from pygame.locals import K_v
-from pygame.locals import K_w
+# from pygame.locals import K_DOWN
+# from pygame.locals import K_ESCAPE
+# from pygame.locals import K_LEFT
+# from pygame.locals import K_RIGHT
+# from pygame.locals import K_UP
+# from pygame.locals import KEYDOWN
+# from pygame.locals import QUIT
+# from pygame.locals import K_b
+# from pygame.locals import K_e
+# from pygame.locals import K_g
+# from pygame.locals import K_o
+# from pygame.locals import K_p
+# from pygame.locals import K_r
+# from pygame.locals import K_t
+# from pygame.locals import K_v
+# from pygame.locals import K_w
 from rich.traceback import install
 
 # import contact
@@ -63,24 +63,27 @@ def main() -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == KEYDOWN:
-                if event.key == K_r:
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
                     start_ping(arc_mgr, constants.RED)
-                if event.key == K_g:
+                if event.key == pygame.K_g:
                     start_ping(arc_mgr, constants.GREEN)
-                if event.key == K_b:
+                if event.key == pygame.K_b:
                     start_ping(arc_mgr, constants.BLACK)
-                if event.key == K_t:
+                if event.key == pygame.K_t:
                     arc_mgr.rand_contact()
-                    # angle = randint(0, 359)
-                    # # radius = randint(100, HBOX)
-                    # radius = HBOX - 40
-                    # x = radius * math.cos(angle) + HBOX
-                    # y = radius * math.sin(angle) + HBOX
-                    # logger.debug(f"Random contact at {x,y}")
-                    # arc_mgr.contacts.append(Contact(x, y))
+                if event.key == pygame.K_d:
+                    start_ping(arc_mgr, constants.BLACK)
+                if event.key == pygame.K_n:
+                    start_ping(arc_mgr, constants.BLACK)
+                if event.key == pygame.K_o:
+                    start_ping(arc_mgr, constants.BLACK)
+                if event.key == pygame.K_s:
+                    start_ping(arc_mgr, constants.BLACK)
+                if event.key == pygame.K_w:
+                    start_ping(arc_mgr, constants.BLACK)
 
-                if event.key == K_ESCAPE:
+                if event.key == pygame.K_ESCAPE:
                     running = False
 
         # Fill the background with blue
@@ -129,6 +132,17 @@ def start_ping(arc_mgr, color=constants.RED, sound=snd.ping):
     # logger.debug(f"Number of channels: {sound.get_num_channels()}")
     arc_mgr.arcs.extend(arc_mgr.arcs_from_xy(
         arc_mgr.listener, constants.HBOX, constants.HBOX, color, 'ping_a'))
+
+def sound_from(arc_mgr, contact, color, sound):
+    pygame.mixer.Sound.play(snd.sounds[sound])
+    arc_mgr.arcs.extend(arc_mgr.arcs_from_xy(
+        contact,
+        contact.rect.x,
+        contact.rect.y,
+        color,
+        sound,
+    ))
+
 
 if __name__ == "__main__":
     main()
