@@ -1,6 +1,5 @@
-from enum import Enum, auto
 import math
-from random import randint, choices
+from random import randint, choice, choices
 from loguru import logger
 import pygame
 
@@ -242,7 +241,12 @@ class ArcMgr:
         for con in self.contacts:
             if con.update():
                 logger.debug(f"Time for {con.type} to make some noise")
-                self.arcs_from_xy(con, con.rect.x, con.rect.y, constants.RED, con.type + '_hi')
+                pygame.mixer.Sound.play(snd.sounds[con.type + choice(['_hi', '_food', '_danger', '_love'])])
+                self.arcs.extend(self.arcs_from_xy(con, con.rect.centerx, con.rect.centery, constants.RED, con.type + '_hi'))
+                # self.arcs_from_xy(con, 0, 0, constants.RED, con.type + '_hi')
+                # self.arcs.extend(self.arcs_from_xy(
+                #     self.listener, constants.HBOX, constants.HBOX, constants.RED, 'ping_a'))
+
             if con.detected:
                 if constants.FADEOUT:
                     self.screen.blit(

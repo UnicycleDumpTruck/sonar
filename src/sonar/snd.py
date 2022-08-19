@@ -39,4 +39,14 @@ sounds = {
     "seal_love": pygame.mixer.Sound("../../sounds/high_ping.wav"),
     "seal_food": pygame.mixer.Sound("../../sounds/high_ping.wav"),
     "seal_danger": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+
+    "shark_hi": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "shark_love": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "shark_food": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "shark_danger": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+
+    "ship_hi": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "ship_love": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "ship_food": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "ship_danger": pygame.mixer.Sound("../../sounds/high_ping.wav"),
 }
