@@ -218,6 +218,7 @@ class ArcMgr:
                     con.alpha = 255
                     con.last_known_x = con.rect.x
                     con.last_known_y = con.rect.y
+                    # TODO combine these
         elif arc_gen.arc_type in {'ping_a_echo', 'ping_b_echo'} and not arc_gen.silent:
             if pygame.sprite.spritecollide(
                 arc_details, [
@@ -243,9 +244,12 @@ class ArcMgr:
                 logger.debug(f"Time for {con.type} to make some noise")
                 pygame.mixer.Sound.play(snd.sounds[con.type + choice(['_hi', '_food', '_danger', '_love'])])
                 self.arcs.extend(self.arcs_from_xy(con, con.rect.centerx, con.rect.centery, constants.RED, con.type + '_hi'))
-                # self.arcs_from_xy(con, 0, 0, constants.RED, con.type + '_hi')
-                # self.arcs.extend(self.arcs_from_xy(
-                #     self.listener, constants.HBOX, constants.HBOX, constants.RED, 'ping_a'))
+                con.alpha = 255
+                con.last_known_x = con.rect.x
+                con.last_known_y = con.rect.y
+                con.detected = True
+                # TODO combine these
+                #con.image.set_alpha(255)
 
             if con.detected:
                 if constants.FADEOUT:

@@ -3,7 +3,7 @@ import pygame
 
 EXCLUSIVE_PING = False
 DEBUG = False
-FADEOUT = False
+FADEOUT = True
 
 # 0,0 is upper left of screen
 SCREEN_WIDTH = 1024
