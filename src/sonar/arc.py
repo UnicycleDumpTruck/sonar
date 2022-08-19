@@ -54,7 +54,7 @@ class ArcMgr:
         self.biosound = False
         self.arcs = []
         self.contacts = []
-        self.listener = contact.Contact(constants.HBOX - 50, constants.HBOX - 40, contact.ConType.SUB)
+        self.listener = contact.Contact(constants.HBOX - 50, constants.HBOX - 40, 'sub')
         self.listener.rect.width = 100
         self.listener.rect.height = 100
         self.listener.radius = 50
@@ -226,7 +226,7 @@ class ArcMgr:
             ):
                 # Echo has come back to submarine.
                 # logger.debug(f"Playing sound: {arc_gen.arc_type.name}")
-                pygame.mixer.Sound.play(snd.ping_sounds[arc_gen.arc_type])
+                pygame.mixer.Sound.play(snd.sounds[arc_gen.arc_type])
                 arc_gen.silent = True
                 self.listener.heard(arc_gen)
 
@@ -240,7 +240,9 @@ class ArcMgr:
         else:
             self.pinging = False
         for con in self.contacts:
-            con.update()
+            if con.update():
+                logger.debug(f"Time for {con.type} to make some noise")
+                self.arcs_from_xy(con, con.rect.x, con.rect.y, constants.RED, con.type + '_hi')
             if con.detected:
                 if constants.FADEOUT:
                     self.screen.blit(

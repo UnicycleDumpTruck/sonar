@@ -3,27 +3,18 @@ import time
 from random import uniform
 from loguru import logger
 import pygame
-
-class ConType(Enum):
-    UNK = auto()
-    SUB = auto()
-    SHIP = auto()
-    WHALE = auto()
-    DOLPHIN = auto()
-    SHARK = auto()
-    NARWHAL = auto()
-    ORCA = auto()
+from random import choice
 
 
 con_types = (
-    ConType.UNK,
-    ConType.SUB,
-    ConType.SHIP,
-    ConType.WHALE,
-    ConType.DOLPHIN,
-    ConType.SHARK,
-    ConType.NARWHAL,
-    ConType.ORCA,
+    'unknown',
+    'sub',
+    'ship',
+    'whale',
+    'dolphin',
+    'shark',
+    'narwhal',
+    'orca',
 )
 
 con_weights = (
@@ -38,14 +29,14 @@ con_weights = (
 )
 
 con_image_filenames = {
-    ConType.UNK: "../../images/question.png",
-    ConType.SHIP: "../../images/ship.png",
-    ConType.SUB: "../../images/sub.png",
-    ConType.WHALE: "../../images/whale.png",
-    ConType.DOLPHIN: "../../images/dolphin.png",
-    ConType.SHARK: "../../images/shark.png",
-    ConType.NARWHAL: "../../images/narwhal.png",
-    ConType.ORCA: "../../images/whale.png"
+    'unknown': "../../images/question.png",
+    'ship': "../../images/ship.png",
+    'sub': "../../images/sub.png",
+    'whale': "../../images/whale.png",
+    'dolphin': "../../images/dolphin.png",
+    'shark': "../../images/shark.png",
+    'narwhal': "../../images/narwhal.png",
+    'orca': "../../images/whale.png"
 }
 
 
@@ -54,79 +45,79 @@ class Contact(pygame.sprite.Sprite):
 
     # Values are what the key will move toward:
     friends = {
-        ConType.UNK: [],
-        ConType.SHIP: [
-            ConType.DOLPHIN,
-            ConType.WHALE,
-            ConType.SHARK,
-            ConType.SUB,
-            ConType.NARWHAL,
-            ConType.ORCA,
+        'unknown': [],
+        'ship': [
+            'dolphin',
+            'whale',
+            'shark',
+            'sub',
+            'narwhal',
+            'orca',
         ],
-        ConType.SUB: [
-            ConType.SHIP,
-            ConType.SUB,
-            ConType.DOLPHIN,
-            ConType.SHARK,
-            ConType.WHALE,
-            ConType.NARWHAL,
-            ConType.ORCA,
+        'sub': [
+            'ship',
+            'sub',
+            'dolphin',
+            'shark',
+            'whale',
+            'narwhal',
+            'orca',
         ],
-        ConType.WHALE: [
-            ConType.WHALE,
-            ConType.ORCA,
-            ConType.DOLPHIN,
-            # ConType.SUB,
+        'whale': [
+            'whale',
+            'orca',
+            'dolphin',
+            # 'sub',
         ],
-        ConType.DOLPHIN: [
-            ConType.DOLPHIN,
-            ConType.ORCA,
-            ConType.NARWHAL,
-            ConType.SHIP,
-            # ConType.SUB,
+        'dolphin': [
+            'dolphin',
+            'orca',
+            'narwhal',
+            'ship',
+            # 'sub',
         ],
-        ConType.SHARK: [
-            ConType.SHIP,
-            # ConType.SUB,
+        'shark': [
+            'ship',
+            # 'sub',
         ],
-        ConType.NARWHAL: [
-            ConType.NARWHAL,
-            # ConType.SUB,
+        'narwhal': [
+            'narwhal',
+            # 'sub',
         ],
-        ConType.ORCA: [
-            ConType.ORCA,
-            # ConType.SUB,
+        'orca': [
+            'orca',
+            # 'sub',
         ]
     }
 
     # Values are what the key will flee:
     foes = {
-        ConType.UNK: [],
-        ConType.DOLPHIN: [
-            ConType.SHARK,
+        'unknown': [],
+        'dolphin': [
+            'shark',
         ],
-        ConType.SHIP: [],
-        ConType.WHALE: [
-            ConType.SHARK,
-            ConType.SHIP,
+        'ship': [],
+        'whale': [
+            'shark',
+            'ship',
         ],
-        ConType.SUB: [],
-        ConType.SHARK: [
-            ConType.ORCA,
-            ConType.DOLPHIN
+        'sub': [],
+        'shark': [
+            'orca',
+            'dolphin'
         ],
-        ConType.NARWHAL: [
-            ConType.NARWHAL
+        'narwhal': [
+            'narwhal'
         ],
-        ConType.ORCA: [
-            ConType.ORCA
+        'orca': [
+            'orca'
         ],
     }
 
     # TODO: movement toward good sounds away from bad
     # TODO: Categorize sounds good, bad, indifferent
     # TODO: wander away after period
-    def __init__(self, x, y, type=ConType.UNK):
+    def __init__(self, x, y, type='unknown'):
         """Initialize."""
         super().__init__()
         self.surf = pygame.Surface((75, 75))
@@ -145,15 +136,20 @@ class Contact(pygame.sprite.Sprite):
         self.heading = 0  # randint(0, 359)
         self.speed = 3
         self.last_move = time.monotonic()
+        self.last_sound = time.monotonic()
         self.last_known_x = self.rect.x
         self.last_known_y = self.rect.y
         self.towards = pygame.Vector2(uniform(-2, 2), uniform(-2, 2))
 
     def update(self):
-        """Continue at set heading and speed."""
+        """Continue at set heading and speed. Return true if time to play sound."""
         if time.monotonic() - self.last_move > 0.5:
             self.last_move = time.monotonic()
             self.rect.center = self.rect.center + self.towards
+        if time.monotonic() - self.last_sound > 4 + choice([0,2,4,8]):
+            self.last_sound = time.monotonic()
+            return True
+        return False
 
     def heard(self, arc_gen):
         """Process sound and change heading and speed accordingly."""
@@ -184,4 +180,4 @@ class Contact(pygame.sprite.Sprite):
                 f"{self.type} heard {heard_type} but doesn't care.")
 
     def __repr__(self):
-        return f"{self.type.name} centered at x:{self.rect.centerx} y:{self.rect.centery}, towards:{self.towards}"
+        return f"{self.type} centered at x:{self.rect.centerx} y:{self.rect.centery}, towards:{self.towards}"
