@@ -1,5 +1,6 @@
-from cgi import print_arguments
+# from cgi import print_arguments
 # import RPi.GPIO as GPIO
+from loguru import logger
 import board
 import busio
 from digitalio import Direction
@@ -63,11 +64,17 @@ class ButtonMgr():
                        pin5, pin6, pin7, pinGrn, pinRed, ]
         self.outputs = [pin8, pin9, pin10, pin11, pin12, pin13, pin14, pin15, ]
 
+        self.input_states = [True for _ in range(10)]
+
     def update(self):
         for i, button in enumerate(self.inputs):
-            if i < 8:
-                self.outputs[i].value = button.value
-            elif button.value == False:
-                for led in self.outputs:
-                    led.value = False
+            current_state = button.value
+            if current_state != self.input_states[i]:
+                logger.debug(f"Input {i} changed to {current_state}")
+                self.input_states[i] = current_state
 
+            # if i < 8:
+            #     self.outputs[i].value = button.value
+            # elif button.value == False:
+            #     for led in self.outputs:
+            #         led.value = False
