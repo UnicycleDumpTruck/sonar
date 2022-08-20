@@ -1,9 +1,10 @@
 from cgi import print_arguments
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 import board
 import busio
 from digitalio import Direction
 from digitalio import Pull
+from digitalio import DigitalInOut
 from adafruit_mcp230xx.mcp23017 import MCP23017
 
 i2c = busio.I2C(board.SCL, board.SDA)
@@ -55,12 +56,8 @@ class ButtonMgr():
         pin15 = mcp.get_pin(pin=15)
         pin15.direction = Direction.OUTPUT
 
-        pinGrn = 23
-        pinRed = 24
-        GPIO.setmode(GPIO.BCM)  # Broadcom pin-numbering scheme
-        # Button pin set as input w/ pull-up
-        GPIO.setup(pinGrn, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(pinRed, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        pinGrn = DigitalInOut(board.D23)
+        pinRed = DigitalInOut(board.D24)
 
         self.inputs = [pin0, pin1, pin2, pin3, pin4,
                        pin5, pin6, pin7, pinGrn, pinRed, ]
