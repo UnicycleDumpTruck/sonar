@@ -33,7 +33,7 @@ install(show_locals=True)
 
 architecture = uname()[4][:3]
 print(f"Running on architecture: {architecture}")
-if architecture.lower() == "arm":
+if architecture.lower() == "aar":
     import button
     ON_RPI = True
 else:
