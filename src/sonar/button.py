@@ -70,3 +70,7 @@ class ButtonMgr():
         for i, button in enumerate(self.inputs):
             if i < 8:
                 self.outputs[i].value = button.value
+            elif button.input() == True:
+                for led in self.outputs:
+                    led.value = True
+
