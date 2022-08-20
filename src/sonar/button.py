@@ -96,7 +96,7 @@ class ButtonMgr():
                 if i < 8:
                     self.outputs[i].value = False
             if button.rose and i < 8:
-                self.outputs[i].value = False
+                self.outputs[i].value = True
         return changes
 
         # if i < 8:
