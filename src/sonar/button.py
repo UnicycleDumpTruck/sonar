@@ -1,5 +1,3 @@
-# from cgi import print_arguments
-# import RPi.GPIO as GPIO
 from loguru import logger
 import board
 import busio
@@ -96,6 +94,7 @@ class ButtonMgr():
             (but0, pin8, 0), (but1, pin9, 1), (but2, pin10, 2), (but3, pin11, 3), ]
         self.message_buttons = [
             (but4, pin12, 4), (but5, pin13, 5), (but6, pin14, 6), (but7, pin15, 7), ]
+        self.animal_selection = 0
 
     def update(self):
         changes = []
@@ -103,8 +102,27 @@ class ButtonMgr():
             button.update()
             if button.fell:
                 logger.debug(f"Input {number} fell.")
-                changes.append(number)
+                changes.append(('ping', number))
                 led.value = False
             if button.rose:
                 led.value = True
+        for button, led, number in self.message_buttons:
+            button.update()
+            if button.fell:
+                led.value = False
+                logger.debug(f"Message ({self.animal_selection}, {number})")
+                changes.append((self.animal_selection, number))
+            if button.rose:
+                led.value = True
+        for button, led, number in self.animal_buttons:
+            button.update()
+            if button.fell:
+                logger.debug(f"Animal selection changed to {number}")
+                changes.append((self.animal_selection, number))
+                self.animal_selection = number
+            if number == self.animal_selection:
+                led.value = True
+            else:
+                led.value = False
         return changes
+
