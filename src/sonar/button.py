@@ -67,14 +67,17 @@ class ButtonMgr():
         self.input_states = [True for _ in range(10)]
 
     def update(self):
+        changes = []
         for i, button in enumerate(self.inputs):
             current_state = button.value
             if current_state != self.input_states[i]:
                 logger.debug(f"Input {i} changed to {current_state}")
                 self.input_states[i] = current_state
+                changes.append(i)
+        return changes
 
-            # if i < 8:
-            #     self.outputs[i].value = button.value
-            # elif button.value == False:
-            #     for led in self.outputs:
-            #         led.value = False
+        # if i < 8:
+        #     self.outputs[i].value = button.value
+        # elif button.value == False:
+        #     for led in self.outputs:
+        #         led.value = False

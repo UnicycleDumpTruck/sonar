@@ -52,7 +52,7 @@ def main() -> None:
     """Sonar."""
 
     # Set up the drawing window
-    screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 #    screen = pygame.display.set_mode([constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT])
     arc_mgr = arc.ArcMgr(screen)
     pygame.mouse.set_visible(False)
@@ -61,7 +61,11 @@ def main() -> None:
 
     while running:
         if ON_RPI:
-            btn_mgr.update()
+            changes = btn_mgr.update()
+            if 8 in changes:
+                start_ping(arc_mgr, constants.GREEN)
+            if 9 in changes:
+                start_ping(arc_mgr, constants.RED)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -76,7 +80,8 @@ def main() -> None:
                     arc_mgr.rand_contact()
 
                 if event.key == pygame.K_d:
-                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, 'dolphin_hi')
+                    sound_from(arc_mgr, arc_mgr.listener,
+                               constants.BLUE, 'dolphin_hi')
                 if event.key == pygame.K_n:
                     start_ping(arc_mgr, constants.BLACK)
                 if event.key == pygame.K_o:
@@ -106,17 +111,20 @@ def main() -> None:
 
 def draw_reticle(scrn):
     # Outer White Circle
-    pygame.draw.circle(scrn, constants.WHITE, constants.CENTER, constants.BOX // 2 - constants.RWT)
+    pygame.draw.circle(scrn, constants.WHITE, constants.CENTER,
+                       constants.BOX // 2 - constants.RWT)
 
     # Inner Blue Circle
-    pygame.draw.circle(scrn, constants.BG_BLUE, constants.CENTER, constants.BOX // 2 - (constants.RWT * 2))
+    pygame.draw.circle(scrn, constants.BG_BLUE, constants.CENTER,
+                       constants.BOX // 2 - (constants.RWT * 2))
 
     # Reticle crossing lines
     pygame.draw.rect(scrn, constants.WHITE, constants.HRETL)
     pygame.draw.rect(scrn, constants.WHITE, constants.VRETL)
 
     # Central Blanking circle
-    pygame.draw.circle(scrn, constants.BG_BLUE, constants.CENTER, 60)  # RCNT + RWT)
+    pygame.draw.circle(scrn, constants.BG_BLUE,
+                       constants.CENTER, 60)  # RCNT + RWT)
 
     # Central circle
     # pygame.draw.circle(scrn, WHITE, CENTER, RCNT)
@@ -135,6 +143,7 @@ def start_ping(arc_mgr, color=constants.RED, sound=snd.ping):
     # logger.debug(f"Number of channels: {sound.get_num_channels()}")
     arc_mgr.arcs.extend(arc_mgr.arcs_from_xy(
         arc_mgr.listener, constants.HBOX, constants.HBOX, color, 'ping_a'))
+
 
 def sound_from(arc_mgr, contact, color, sound):
     pygame.mixer.Sound.play(snd.sounds[sound])
