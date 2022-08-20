@@ -65,20 +65,21 @@ def main() -> None:
         if ON_RPI:
             button_presses = btn_mgr.update()
             for change in button_presses:
-                match change[0]:
-                    case 8:
-                        start_ping(arc_mgr, constants.GREEN)
-                    case 9:
-                        start_ping(arc_mgr, constants.RED)
-                    case _:
-                        sound_from(
-                            arc_mgr,
-                            arc_mgr.listener,
-                            constants.BLUE,
-                            constants.ANIMALS[change[0]]
-                            + "_"
-                            + constants.MESSAGES[change[1]],
-                        )
+                sender = change[0]
+                message = change[1]
+                if sender == 8:
+                    start_ping(arc_mgr, constants.GREEN)
+                elif sender == 9:
+                    start_ping(arc_mgr, constants.RED)
+                else:
+                    sound_from(
+                        arc_mgr,
+                        arc_mgr.listener,
+                        constants.BLUE,
+                        constants.ANIMALS[sender]
+                        + "_"
+                        + constants.MESSAGES[sender],
+                    )
                 # TODO: incorporate pings into sound_from() so all these call the same.
 
         for event in pygame.event.get():

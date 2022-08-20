@@ -20,6 +20,11 @@ sounds = {
     "dolphin_food": pygame.mixer.Sound("../../sounds/high_ping.wav"),
     "dolphin_danger": pygame.mixer.Sound("../../sounds/high_ping.wav"),
 
+    "beluga_hi": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "beluga_love": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "beluga_food": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "beluga_danger": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+
     "whale_hi": pygame.mixer.Sound("../../sounds/high_ping.wav"),
     "whale_love": pygame.mixer.Sound("../../sounds/high_ping.wav"),
     "whale_food": pygame.mixer.Sound("../../sounds/high_ping.wav"),
