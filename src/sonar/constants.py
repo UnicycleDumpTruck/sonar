@@ -30,3 +30,6 @@ TOP_SPEED = 10
 RANGE = HBOX + (75 / 2)  # Range outside of which to delete contact
 SUB_ICON = pygame.image.load("../../images/big_sub.png")
 SUB_LOCATION = (HBOX - 50, HBOX - 40)
+
+ANIMALS = ('orca', 'beluga', 'whale', 'seal',)
+MESSAGES = ('hi', 'love', 'food', 'danger',)

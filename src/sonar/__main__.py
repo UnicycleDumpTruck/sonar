@@ -6,6 +6,7 @@ from os import uname
 
 import pygame
 from loguru import logger
+
 # from pygame.locals import K_DOWN
 # from pygame.locals import K_ESCAPE
 # from pygame.locals import K_LEFT
@@ -35,6 +36,7 @@ architecture = uname()[4][:3]
 print(f"Running on architecture: {architecture}")
 if architecture.lower() == "aar":
     import button
+
     ON_RPI = True
 else:
     ON_RPI = False
@@ -53,7 +55,7 @@ def main() -> None:
 
     # Set up the drawing window
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-#    screen = pygame.display.set_mode([constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT])
+    #    screen = pygame.display.set_mode([constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT])
     arc_mgr = arc.ArcMgr(screen)
     pygame.mouse.set_visible(False)
     # Run until quit
@@ -61,11 +63,24 @@ def main() -> None:
 
     while running:
         if ON_RPI:
-            changes = btn_mgr.update()
-            if 8 in changes:
-                start_ping(arc_mgr, constants.GREEN)
-            if 9 in changes:
-                start_ping(arc_mgr, constants.RED)
+            button_presses = btn_mgr.update()
+            for change in button_presses:
+                match change[0]:
+                    case 8:
+                        start_ping(arc_mgr, constants.GREEN)
+                    case 9:
+                        start_ping(arc_mgr, constants.RED)
+                    case _:
+                        sound_from(
+                            arc_mgr,
+                            arc_mgr.listener,
+                            constants.BLUE,
+                            constants.ANIMALS[change[0]]
+                            + "_"
+                            + constants.MESSAGES[change[1]],
+                        )
+                # TODO: incorporate pings into sound_from() so all these call the same.
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -80,8 +95,7 @@ def main() -> None:
                     arc_mgr.rand_contact()
 
                 if event.key == pygame.K_d:
-                    sound_from(arc_mgr, arc_mgr.listener,
-                               constants.BLUE, 'dolphin_hi')
+                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, "dolphin_hi")
                 if event.key == pygame.K_n:
                     start_ping(arc_mgr, constants.BLACK)
                 if event.key == pygame.K_o:
@@ -111,20 +125,24 @@ def main() -> None:
 
 def draw_reticle(scrn):
     # Outer White Circle
-    pygame.draw.circle(scrn, constants.WHITE, constants.CENTER,
-                       constants.BOX // 2 - constants.RWT)
+    pygame.draw.circle(
+        scrn, constants.WHITE, constants.CENTER, constants.BOX // 2 - constants.RWT
+    )
 
     # Inner Blue Circle
-    pygame.draw.circle(scrn, constants.BG_BLUE, constants.CENTER,
-                       constants.BOX // 2 - (constants.RWT * 2))
+    pygame.draw.circle(
+        scrn,
+        constants.BG_BLUE,
+        constants.CENTER,
+        constants.BOX // 2 - (constants.RWT * 2),
+    )
 
     # Reticle crossing lines
     pygame.draw.rect(scrn, constants.WHITE, constants.HRETL)
     pygame.draw.rect(scrn, constants.WHITE, constants.VRETL)
 
     # Central Blanking circle
-    pygame.draw.circle(scrn, constants.BG_BLUE,
-                       constants.CENTER, 60)  # RCNT + RWT)
+    pygame.draw.circle(scrn, constants.BG_BLUE, constants.CENTER, 60)  # RCNT + RWT)
 
     # Central circle
     # pygame.draw.circle(scrn, WHITE, CENTER, RCNT)
@@ -141,19 +159,27 @@ def start_ping(arc_mgr, color=constants.RED, sound=snd.ping):
     # pinging = True
     pygame.mixer.Sound.play(sound)
     # logger.debug(f"Number of channels: {sound.get_num_channels()}")
-    arc_mgr.arcs.extend(arc_mgr.arcs_from_xy(
-        arc_mgr.listener, constants.HBOX, constants.HBOX, color, 'ping_a'))
+    arc_mgr.arcs.extend(
+        arc_mgr.arcs_from_xy(
+            arc_mgr.listener, constants.HBOX, constants.HBOX, color, "ping_a"
+        )
+    )
+
+
+# TODO: Combine functions start_ping() and sound_from()
 
 
 def sound_from(arc_mgr, contact, color, sound):
     pygame.mixer.Sound.play(snd.sounds[sound])
-    arc_mgr.arcs.extend(arc_mgr.arcs_from_xy(
-        contact,
-        contact.rect.centerx,
-        contact.rect.centery,
-        color,
-        sound,
-    ))
+    arc_mgr.arcs.extend(
+        arc_mgr.arcs_from_xy(
+            contact,
+            contact.rect.centerx,
+            contact.rect.centery,
+            color,
+            sound,
+        )
+    )
 
 
 if __name__ == "__main__":

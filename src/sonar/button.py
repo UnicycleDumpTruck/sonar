@@ -102,7 +102,7 @@ class ButtonMgr():
             button.update()
             if button.fell:
                 logger.debug(f"Input {number} fell.")
-                changes.append(('ping', number))
+                changes.append((number, number))
                 led.value = False
             if button.rose:
                 led.value = True
