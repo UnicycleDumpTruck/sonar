@@ -62,6 +62,12 @@ class ButtonMgr():
         pinRed = DigitalInOut(board.D24)
         butRed = Debouncer(pinRed)
 
+        GreenLed = DigitalInOut(board.D18)
+        GreenLed.direction = Direction.OUTPUT
+
+        RedLed = DigitalInOut(board.D25)
+        RedLed.direction = Direction.OUTPUT
+
         # Pins 8-15 on the left side of the MCP23017
         pin8 = mcp.get_pin(pin=8)
         pin8.direction = Direction.OUTPUT
@@ -82,25 +88,23 @@ class ButtonMgr():
 
         self.inputs = [but0, but1, but2, but3, but4,
                        but5, but6, but7, butGrn, butRed, ]
-        self.outputs = [pin8, pin9, pin10, pin11, pin12, pin13, pin14, pin15, ]
+        self.outputs = [pin8, pin9, pin10, pin11, pin12,
+                        pin13, pin14, pin15, GreenLed, RedLed]
 
-        self.input_states = [True for _ in range(10)]
+        self.ping_buttons = [(butGrn, GreenLed, 8), (butRed, RedLed, 9), ]
+        self.animal_buttons = [
+            (but0, pin8, 0), (but1, pin9, 1), (but2, pin10, 2), (but3, pin11, 3), ]
+        self.message_buttons = [
+            (but4, pin12, 4), (but5, pin13, 5), (but6, pin14, 6), (but7, pin15, 7), ]
 
     def update(self):
         changes = []
-        for i, button in enumerate(self.inputs):
+        for button, led, number in self.ping_buttons:
             button.update()
             if button.fell:
-                logger.debug(f"Input {i} fell.")
-                changes.append(i)
-                if i < 8:
-                    self.outputs[i].value = False
-            if button.rose and i < 8:
-                self.outputs[i].value = False
+                logger.debug(f"Input {number} fell.")
+                changes.append(number)
+                led.value = False
+            if button.rose:
+                led.value = True
         return changes
-
-        # if i < 8:
-        #     self.outputs[i].value = button.value
-        # elif button.value == False:
-        #     for led in self.outputs:
-        #         led.value = False
