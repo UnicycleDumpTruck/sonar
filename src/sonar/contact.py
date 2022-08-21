@@ -147,7 +147,7 @@ class Contact(pygame.sprite.Sprite):
 
         if (time.monotonic() - self.last_sound) > self.time_to_next_sound:
             self.last_sound = time.monotonic()
-            self.time_to_next_sound = randint(8, 32)
+            self.time_to_next_sound = randint(16, 60)
             return True
         return False
 
@@ -155,6 +155,7 @@ class Contact(pygame.sprite.Sprite):
         """Process sound and change heading and speed accordingly."""
         # heard_type = arc_gen.originator.type
         heard_type = arc_gen.arc_type.split('_')[0]
+        logger.debug(f"{self} heard {heard_type}")
         if heard_type in Contact.foes[self.type]:
             con_vector = pygame.Vector2(self.rect.center)
             sound_vector = pygame.Vector2(

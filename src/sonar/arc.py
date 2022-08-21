@@ -199,8 +199,8 @@ class ArcMgr:
             pygame.draw.arc(
                 self.screen, *arc_details.iterable(), constants.AWT)
         # logger.debug(f"arc_type:{arc_gen.arc_type}")
-        if arc_gen.arc_type in {'ping_a', 'ping_b'} and not arc_gen.silent:
-            # if 'echo' not in arc_gen.arc_type and not arc_gen.silent:
+        # if arc_gen.arc_type in {'ping_a', 'ping_b'} and not arc_gen.silent:
+        if 'echo' not in arc_gen.arc_type and not arc_gen.silent:
             collide = pygame.sprite.spritecollide(
                 arc_details, self.contacts, False, pygame.sprite.collide_circle
             )
@@ -209,20 +209,21 @@ class ArcMgr:
                     con.heard(arc_gen)
                     logger.debug(
                         f"Arc of type {arc_gen.arc_type} collided contact w tags {arc_gen.tags}")
-                    self.arcs.extend(
-                        self.arc_to_center_from_xy(
-                            con,
-                            con.rect.centerx,
-                            con.rect.centery,
-                            arc_details.color,
-                            arc_gen.arc_type + '_echo',
+                    if arc_gen.arc_type in {'ping', 'ping_a', 'ping_b',} and not arc_gen.silent: 
+                        self.arcs.extend(
+                            self.arc_to_center_from_xy(
+                                con,
+                                con.rect.centerx,
+                                con.rect.centery,
+                                arc_details.color,
+                                arc_gen.arc_type + '_echo',
+                            )
                         )
-                    )
-                    arc_gen.contacts.append(con)
-                    con.detected = True
-                    con.alpha = 255
-                    con.last_known_x = con.rect.x
-                    con.last_known_y = con.rect.y
+                        arc_gen.contacts.append(con)
+                        con.detected = True
+                        con.alpha = 255
+                        con.last_known_x = con.rect.x
+                        con.last_known_y = con.rect.y
                     # TODO combine these
         elif arc_gen.arc_type in {'ping_a_echo', 'ping_b_echo'} and not arc_gen.silent:
             if pygame.sprite.spritecollide(
@@ -250,12 +251,12 @@ class ArcMgr:
                 if rand_sound := snd.sounds[con.type +
                                             choice(['_hi', '_food', '_danger', '_love'])]:
                     pygame.mixer.Sound.play(rand_sound)
-                self.arcs.extend(self.arcs_from_xy(
-                    con, con.rect.centerx, con.rect.centery, constants.RED, f"{con.type}_hi"))
-                con.alpha = 255
-                con.last_known_x = con.rect.x
-                con.last_known_y = con.rect.y
-                con.detected = True
+                    self.arcs.extend(self.arcs_from_xy(
+                     con, con.rect.centerx, con.rect.centery, constants.RED, f"{con.type}_hi"))
+                    con.alpha = 255
+                    con.last_known_x = con.rect.x
+                    con.last_known_y = con.rect.y
+                    con.detected = True
                 # TODO combine these
                 # con.image.set_alpha(255)
 

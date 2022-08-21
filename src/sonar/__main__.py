@@ -54,8 +54,10 @@ def main() -> None:
     """Sonar."""
 
     # Set up the drawing window
-    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-    #    screen = pygame.display.set_mode([constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT])
+    if ON_RPI:
+        screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    else:
+        screen = pygame.display.set_mode([constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT])
     arc_mgr = arc.ArcMgr(screen)
     pygame.mouse.set_visible(False)
     # Run until quit
@@ -65,21 +67,20 @@ def main() -> None:
         if ON_RPI:
             button_presses = btn_mgr.update()
             for change in button_presses:
-                sender = change[0]
-                message = change[1]
-                if sender == 8:
-                    start_ping(arc_mgr, constants.GREEN)
-                elif sender == 9:
-                    start_ping(arc_mgr, constants.RED)
-                else:
-                    sound_from(
-                        arc_mgr,
-                        arc_mgr.listener,
-                        constants.BLUE,
-                        constants.ANIMALS[sender]
-                        + "_"
-                        + constants.MESSAGES[sender],
-                    )
+                match change[0]:
+                    case 8:
+                        start_ping(arc_mgr, constants.GREEN)
+                    case 9:
+                        start_ping(arc_mgr, constants.RED)
+                    case _:
+                        sound_from(
+                            arc_mgr,
+                            arc_mgr.listener,
+                            constants.BLUE,
+                            constants.ANIMALS[change[0]]
+                            + "_"
+                            + constants.MESSAGES[change[1]],
+                        )
                 # TODO: incorporate pings into sound_from() so all these call the same.
 
         for event in pygame.event.get():
@@ -87,24 +88,23 @@ def main() -> None:
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
-                    start_ping(arc_mgr, constants.RED)
+                    start_ping(arc_mgr, constants.RED, 'ping_b')
                 if event.key == pygame.K_g:
-                    start_ping(arc_mgr, constants.GREEN)
-                if event.key == pygame.K_b:
-                    start_ping(arc_mgr, constants.BLACK)
+                    start_ping(arc_mgr, constants.GREEN, 'ping_a')
+
                 if event.key == pygame.K_t:
                     arc_mgr.rand_contact()
 
-                if event.key == pygame.K_d:
-                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, "dolphin_hi")
+                if event.key == pygame.K_b:
+                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, "beluga_hi")
                 if event.key == pygame.K_n:
-                    start_ping(arc_mgr, constants.BLACK)
+                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, "narwhal_hi")
                 if event.key == pygame.K_o:
-                    start_ping(arc_mgr, constants.BLACK)
+                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, "orca_hi")
                 if event.key == pygame.K_s:
-                    start_ping(arc_mgr, constants.BLACK)
+                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, "ship_hi")
                 if event.key == pygame.K_w:
-                    start_ping(arc_mgr, constants.BLACK)
+                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, "whale_hi")
 
                 if event.key == pygame.K_ESCAPE:
                     running = False
@@ -151,18 +151,19 @@ def draw_reticle(scrn):
     scrn.blit(constants.SUB_ICON, constants.SUB_LOCATION)
 
 
-def start_ping(arc_mgr, color=constants.RED, sound=snd.ping):
+def start_ping(arc_mgr, color=constants.RED, soundname='ping_a'):
     # if pinging and constants.EXCLUSIVE_PING:
     #     logger.debug("Ping requested, but already pinging.")
     #     return
     # else:
     # logger.debug("Commencing ping.")
     # pinging = True
-    pygame.mixer.Sound.play(sound)
+    soundfile = snd.sounds[soundname]
+    pygame.mixer.Sound.play(soundfile)
     # logger.debug(f"Number of channels: {sound.get_num_channels()}")
     arc_mgr.arcs.extend(
         arc_mgr.arcs_from_xy(
-            arc_mgr.listener, constants.HBOX, constants.HBOX, color, "ping_a"
+            arc_mgr.listener, constants.HBOX, constants.HBOX, color, soundname
         )
     )
 
