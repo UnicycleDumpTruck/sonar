@@ -11,7 +11,7 @@ con_types = (
     'sub',
     'ship',
     'whale',
-    'dolphin',
+    # 'dolphin',
     'shark',
     'narwhal',
     'orca',
@@ -22,7 +22,7 @@ con_weights = (
     5,  # SUB
     5,  # SHIP
     12,  # WHALE
-    15,  # DOLPHIN
+    # 15,  # DOLPHIN
     10,  # SHARK
     10,  # NARWHAL
     12,  # ORCA
@@ -33,7 +33,7 @@ con_image_filenames = {
     'ship': "../../images/ship.png",
     'sub': "../../images/sub.png",
     'whale': "../../images/whale.png",
-    'dolphin': "../../images/dolphin.png",
+    # 'dolphin': "../../images/dolphin.png",
     'shark': "../../images/shark.png",
     'narwhal': "../../images/narwhal.png",
     'orca': "../../images/whale.png"
@@ -114,9 +114,6 @@ class Contact(pygame.sprite.Sprite):
         ],
     }
 
-    # TODO: movement toward good sounds away from bad
-    # TODO: Categorize sounds good, bad, indifferent
-    # TODO: wander away after period
     def __init__(self, x, y, type='unknown'):
         """Initialize."""
         super().__init__()
@@ -137,7 +134,7 @@ class Contact(pygame.sprite.Sprite):
         self.speed = 3
         self.last_move = time.monotonic()
         self.last_sound = time.monotonic()
-        self.time_to_next_sound = randint(8,32)
+        self.time_to_next_sound = randint(8, 32)
         self.last_known_x = self.rect.x
         self.last_known_y = self.rect.y
         self.towards = pygame.Vector2(uniform(-2, 2), uniform(-2, 2))
@@ -150,7 +147,7 @@ class Contact(pygame.sprite.Sprite):
 
         if (time.monotonic() - self.last_sound) > self.time_to_next_sound:
             self.last_sound = time.monotonic()
-            self.time_to_next_sound = randint(8,32)
+            self.time_to_next_sound = randint(8, 32)
             return True
         return False
 
@@ -160,24 +157,29 @@ class Contact(pygame.sprite.Sprite):
         heard_type = arc_gen.arc_type.split('_')[0]
         if heard_type in Contact.foes[self.type]:
             con_vector = pygame.Vector2(self.rect.center)
-            sound_vector = pygame.Vector2((arc_gen.originator.rect.centerx, arc_gen.originator.rect.centery,))
+            sound_vector = pygame.Vector2(
+                (arc_gen.originator.rect.centerx, arc_gen.originator.rect.centery,))
             direction = (con_vector - sound_vector)
             if direction.length() != 0:
                 self.towards = direction.normalize() * self.speed
-                logger.debug(f"{self.type} fleeing {heard_type} noise from {arc_gen.originator.type} in direction: {self.towards}")
+                logger.debug(
+                    f"{self.type} fleeing {heard_type} noise from {arc_gen.originator.type} in direction: {self.towards}")
             else:
-                logger.warning(f"Direction vector == 0. {self.type} on top of {arc_gen.originator.type}.")  
-
+                logger.warning(
+                    f"Direction vector == 0. {self.type} on top of {arc_gen.originator.type}.")
 
         if heard_type in Contact.friends[self.type]:
             con_vector = pygame.Vector2(self.rect.center)
-            sound_vector = pygame.Vector2((arc_gen.originator.rect.centerx, arc_gen.originator.rect.centery,))
+            sound_vector = pygame.Vector2(
+                (arc_gen.originator.rect.centerx, arc_gen.originator.rect.centery,))
             direction = (sound_vector - con_vector)
             if direction.length() != 0:
                 self.towards = direction.normalize() * self.speed
-                logger.debug(f"{self.type} chasing {heard_type} noise from {arc_gen.originator.type} in direction: {self.towards}")
+                logger.debug(
+                    f"{self.type} chasing {heard_type} noise from {arc_gen.originator.type} in direction: {self.towards}")
             else:
-                logger.warning(f"Direction vector == 0. {self.type} on top of {arc_gen.originator.type}.")  
+                logger.warning(
+                    f"Direction vector == 0. {self.type} on top of {arc_gen.originator.type}.")
 
         else:
             logger.debug(

@@ -7,6 +7,7 @@ import contact
 import constants
 import snd
 
+
 def angle_of_vector(x, y):
     return pygame.math.Vector2(x, y).angle_to((1, 0))
 
@@ -53,7 +54,8 @@ class ArcMgr:
         self.biosound = False
         self.arcs = []
         self.contacts = []
-        self.listener = contact.Contact(constants.HBOX - 12, constants.HBOX -12, 'sub') # was x - 50, y - 40
+        self.listener = contact.Contact(
+            constants.HBOX - 12, constants.HBOX - 12, 'sub')  # was x - 50, y - 40
         self.listener.rect.width = 100
         self.listener.rect.height = 100
         self.listener.radius = 50
@@ -64,7 +66,8 @@ class ArcMgr:
         # radius = constants.HBOX - 40
         x = radius * math.cos(math.radians(angle)) + constants.HBOX
         y = radius * math.sin(math.radians(angle)) + constants.HBOX
-        new_contact = contact.Contact(x, y, choices(contact.con_types, contact.con_weights, k=1)[0])
+        new_contact = contact.Contact(x, y, choices(
+            contact.con_types, contact.con_weights, k=1)[0])
         # new_contact = Contact(50, (constants.HBOX*1.5), choices(con_types, con_weights, k=1)[0])
         self.contacts.append(new_contact)
         logger.debug(f"Random contact: {new_contact}")
@@ -193,10 +196,11 @@ class ArcMgr:
                 pygame.draw.lines(
                     self.screen, arc_details.color, True, points, 1)
 
-            pygame.draw.arc(self.screen, *arc_details.iterable(), constants.AWT)
+            pygame.draw.arc(
+                self.screen, *arc_details.iterable(), constants.AWT)
         # logger.debug(f"arc_type:{arc_gen.arc_type}")
-        # if arc_gen.arc_type in {'ping_a', 'ping_b'} and not arc_gen.silent:
-        if 'echo' not in arc_gen.arc_type and not arc_gen.silent:
+        if arc_gen.arc_type in {'ping_a', 'ping_b'} and not arc_gen.silent:
+            # if 'echo' not in arc_gen.arc_type and not arc_gen.silent:
             collide = pygame.sprite.spritecollide(
                 arc_details, self.contacts, False, pygame.sprite.collide_circle
             )
@@ -243,14 +247,17 @@ class ArcMgr:
         for con in self.contacts:
             if con.update():
                 logger.debug(f"Time for {con.type} to make some noise")
-                pygame.mixer.Sound.play(snd.sounds[con.type + choice(['_hi', '_food', '_danger', '_love'])])
-                self.arcs.extend(self.arcs_from_xy(con, con.rect.centerx, con.rect.centery, constants.RED, con.type + '_hi'))
+                if rand_sound := snd.sounds[con.type +
+                                            choice(['_hi', '_food', '_danger', '_love'])]:
+                    pygame.mixer.Sound.play(rand_sound)
+                self.arcs.extend(self.arcs_from_xy(
+                    con, con.rect.centerx, con.rect.centery, constants.RED, f"{con.type}_hi"))
                 con.alpha = 255
                 con.last_known_x = con.rect.x
                 con.last_known_y = con.rect.y
                 con.detected = True
                 # TODO combine these
-                #con.image.set_alpha(255)
+                # con.image.set_alpha(255)
 
             if con.detected:
                 if constants.FADEOUT:
@@ -261,15 +268,12 @@ class ArcMgr:
                     con.image.set_alpha(con.alpha)
                 else:
                     self.screen.blit(con.image, con.rect)
-                    # pygame.draw.line(self.screen, constants.RED, (constants.HBOX,
-                    #                  constants.HBOX), (con.rect.centerx, con.rect.centery))
             if (
                 pygame.math.Vector2(con.rect.centerx, con.rect.centery).distance_to(
                     constants.CENTER
                 )
                 > constants.RANGE
             ):
-                # if time.monotonic() - con.last_activity > con.max_age:
                 self.contacts.remove(con)
                 del con
                 logger.debug("Contact out of range, deleted.")
@@ -283,4 +287,3 @@ class ArcMgr:
                     ),
                     2,
                 )
-
