@@ -163,7 +163,7 @@ def start_ping(arc_mgr, color=constants.RED, soundname='ping_a'):
     # logger.debug(f"Number of channels: {sound.get_num_channels()}")
     arc_mgr.arcs.extend(
         arc_mgr.arcs_from_xy(
-            arc_mgr.listener, constants.HBOX, constants.HBOX, color, soundname
+            arc_mgr.listener, constants.HX, constants.HY, color, soundname
         )
     )
 

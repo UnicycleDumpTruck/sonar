@@ -3,17 +3,17 @@ import pygame
 pygame.mixer.pre_init(44100, -16, 1, 256)
 pygame.mixer.init()
 
-ping = pygame.mixer.Sound("../../sounds/high_ping.wav")
-r_ping = pygame.mixer.Sound("../../sounds/high_ping.wav")
-g_ping = pygame.mixer.Sound("../../sounds/high_ping.wav")
-b_ping = pygame.mixer.Sound("../../sounds/high_ping.wav")
+# ping = pygame.mixer.Sound("../../sounds/high_ping.wav")
+# r_ping = pygame.mixer.Sound("../../sounds/high_ping.wav")
+# g_ping = pygame.mixer.Sound("../../sounds/high_ping.wav")
+# b_ping = pygame.mixer.Sound("../../sounds/high_ping.wav")
 
 sounds = {
 
     'ping_a': pygame.mixer.Sound("../../sounds/high_ping.wav"),
-    'ping_a_echo': pygame.mixer.Sound("../../sounds/high_ping.wav"),
-    'ping_b': pygame.mixer.Sound("../../sounds/high_ping.wav"),
-    'ping_b_echo': pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    'ping_a_echo': pygame.mixer.Sound("../../sounds/high_ping.wav"), # TODO: Replace
+    'ping_b': pygame.mixer.Sound("../../sounds/high_ping.wav"), # TODO: Replace
+    'ping_b_echo': pygame.mixer.Sound("../../sounds/high_ping.wav"), # TODO: Replace
 
     # "dolphin_hi": pygame.mixer.Sound("../../sounds/high_ping.wav"),
     # "dolphin_love": pygame.mixer.Sound("../../sounds/high_ping.wav"),
@@ -25,15 +25,15 @@ sounds = {
     "beluga_food": pygame.mixer.Sound("../../sounds/beluga_food.wav"),
     "beluga_danger": pygame.mixer.Sound("../../sounds/beluga_danger.wav"),
 
-    "whale_hi": pygame.mixer.Sound("../../sounds/high_ping.wav"),
-    "whale_love": pygame.mixer.Sound("../../sounds/high_ping.wav"),
-    "whale_food": pygame.mixer.Sound("../../sounds/high_ping.wav"),
-    "whale_danger": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "whale_hi": pygame.mixer.Sound("../../sounds/high_ping.wav"),  # TODO: Replace
+    "whale_love": pygame.mixer.Sound("../../sounds/high_ping.wav"),  # TODO: Replace
+    "whale_food": pygame.mixer.Sound("../../sounds/high_ping.wav"),  # TODO: Replace
+    "whale_danger": pygame.mixer.Sound("../../sounds/high_ping.wav"),  # TODO: Replace
 
     "narwhal_hi": pygame.mixer.Sound("../../sounds/narwhal_hi.wav"),
     "narwhal_love": pygame.mixer.Sound("../../sounds/narwhal_love.wav"),
     "narwhal_food": pygame.mixer.Sound("../../sounds/narwhal_food.wav"),
-    "narwhal_danger": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "narwhal_danger": pygame.mixer.Sound("../../sounds/high_ping.wav"), # TODO: Replace
 
     "orca_hi": pygame.mixer.Sound("../../sounds/orca_hi.mp3"),
     "orca_love": pygame.mixer.Sound("../../sounds/orca_love.wav"),

@@ -55,7 +55,7 @@ class ArcMgr:
         self.arcs = []
         self.contacts = []
         self.listener = contact.Contact(
-            constants.HBOX - 12, constants.HBOX - 12, 'sub')  # was x - 50, y - 40
+            constants.HX - 12, constants.HY - 12, 'sub')  # was x - 50, y - 40
         self.listener.rect.width = 100
         self.listener.rect.height = 100
         self.listener.radius = 50
@@ -63,27 +63,25 @@ class ArcMgr:
     def rand_contact(self):
         angle = randint(0, 359)
         radius = randint(200, constants.HBOX)
-        # radius = constants.HBOX - 40
-        x = radius * math.cos(math.radians(angle)) + constants.HBOX
-        y = radius * math.sin(math.radians(angle)) + constants.HBOX
+        x = radius * math.cos(math.radians(angle)) + constants.HX
+        y = radius * math.sin(math.radians(angle)) + constants.HY
         new_contact = contact.Contact(x, y, choices(
             contact.con_types, contact.con_weights, k=1)[0])
-        # new_contact = Contact(50, (constants.HBOX*1.5), choices(con_types, con_weights, k=1)[0])
         self.contacts.append(new_contact)
         logger.debug(f"Random contact: {new_contact}")
 
     def arcs_from_xy(
-        self, originator, start_x=constants.HBOX, start_y=constants.HBOX, color=constants.RED, arc_type='ping_a', tags=[]
+        self, originator, start_x=constants.HX, start_y=constants.HY, color=constants.RED, arc_type='ping_a', tags=[]
     ):
-        x_offset = start_x - constants.HBOX
-        y_offset = start_y - constants.HBOX
+        x_offset = start_x - constants.HX
+        y_offset = start_y - constants.HY
         return [  # Upper right
             ArcGen(
                 (
                     Arc(
                         color,
                         pygame.Rect(
-                            constants.HBOX - x + x_offset, constants.HBOX - x + y_offset, 2 * x, 2 * x
+                            constants.HX - x + x_offset, constants.HY - x + y_offset, 2 * x, 2 * x
                         ),
                         0 + 0.2,
                         constants.PI / 2 - 0.2,
@@ -100,7 +98,7 @@ class ArcMgr:
                     Arc(
                         color,
                         pygame.Rect(
-                            constants.HBOX - x + x_offset, constants.HBOX - x + y_offset, 2 * x, 2 * x
+                            constants.HX - x + x_offset, constants.HY - x + y_offset, 2 * x, 2 * x
                         ),
                         constants.PI / 2 + 0.2,
                         constants.PI - 0.2,
@@ -117,7 +115,7 @@ class ArcMgr:
                     Arc(
                         color,
                         pygame.Rect(
-                            constants.HBOX - x + x_offset, constants.HBOX - x + y_offset, 2 * x, 2 * x
+                            constants.HX - x + x_offset, constants.HY - x + y_offset, 2 * x, 2 * x
                         ),
                         constants.PI + 0.2,
                         3 * constants.PI / 2 - 0.2,
@@ -134,7 +132,7 @@ class ArcMgr:
                     Arc(
                         color,
                         pygame.Rect(
-                            constants.HBOX - x + x_offset, constants.HBOX - x + y_offset, 2 * x, 2 * x
+                            constants.HX - x + x_offset, constants.HY - x + y_offset, 2 * x, 2 * x
                         ),
                         3 * constants.PI / 2 + 0.2,
                         2 * constants.PI - 0.2,
@@ -149,10 +147,10 @@ class ArcMgr:
         ]
 
     def arc_to_center_from_xy(self, originator, start_x, start_y, color, arc_type, tags=[]):
-        x_offset = start_x - constants.HBOX
-        y_offset = start_y - constants.HBOX
-        angle = angle_of_line(start_x, start_y, constants.HBOX,
-                              constants.HBOX)  # comes back degrees
+        x_offset = start_x - constants.HX
+        y_offset = start_y - constants.HY
+        angle = angle_of_line(start_x, start_y, constants.HX,
+                              constants.HY)  # comes back degrees
         # logger.debug(f"Angle: {angle}")
         arc_start = math.radians(angle - 30)  # convert to rads for pygame arc
         arc_end = math.radians(angle + 30)  # confert to rads for pygame arc
@@ -162,7 +160,7 @@ class ArcMgr:
                     Arc(
                         color,
                         pygame.Rect(
-                            constants.HBOX - x + x_offset, constants.HBOX - x + y_offset, 2 * x, 2 * x
+                            constants.HX - x + x_offset, constants.HY - x + y_offset, 2 * x, 2 * x
                         ),
                         arc_start,
                         arc_end,
