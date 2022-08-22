@@ -67,12 +67,11 @@ def main() -> None:
         if ON_RPI:
             button_presses = btn_mgr.update()
             for change in button_presses:
-                match change[0]:
-                    case 8:
-                        start_ping(arc_mgr, constants.GREEN)
-                    case 9:
-                        start_ping(arc_mgr, constants.RED)
-                    case _:
+                if change[0] == 8:
+                    start_ping(arc_mgr, constants.GREEN)
+                elif change[0] == 9:
+                    start_ping(arc_mgr, constants.RED)
+                else:
                         sound_from(
                             arc_mgr,
                             arc_mgr.listener,
