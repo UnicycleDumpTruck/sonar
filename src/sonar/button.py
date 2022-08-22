@@ -96,6 +96,9 @@ class ButtonMgr():
             (but4, pin12, 4), (but5, pin13, 5), (but6, pin14, 6), (but7, pin15, 7), ]
         self.animal_selection = 0
 
+        for led in self.outputs:
+            led.value = False
+
     def update(self):
         changes = []
         for button, led, number in self.ping_buttons:
@@ -103,17 +106,17 @@ class ButtonMgr():
             if button.fell:
                 logger.debug(f"Input {number} fell.")
                 changes.append((number, number))
-                led.value = False
+                led.value = True 
             if button.rose:
-                led.value = True
+                led.value = False
         for button, led, number in self.message_buttons:
             button.update()
             if button.fell:
-                led.value = False
+                led.value = True
                 logger.debug(f"Message ({self.animal_selection}, {number})")
                 changes.append((self.animal_selection, number))
             if button.rose:
-                led.value = True
+                led.value = False
         for button, led, number in self.animal_buttons:
             button.update()
             if button.fell:
