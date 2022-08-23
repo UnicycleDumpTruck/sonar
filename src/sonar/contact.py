@@ -4,7 +4,7 @@ from random import uniform
 from loguru import logger
 import pygame
 from random import choice, randint
-
+import constants
 
 con_types = (
     'unknown',
@@ -138,12 +138,21 @@ class Contact(pygame.sprite.Sprite):
         self.last_known_x = self.rect.x
         self.last_known_y = self.rect.y
         self.towards = pygame.Vector2(uniform(-2, 2), uniform(-2, 2))
+        self.last_hailed = 0
+        self.replies = 0
 
     def update(self):
         """Continue at set heading and speed. Return true if time to play sound."""
+
         if (time.monotonic() - self.last_move) > 0.5:
             self.last_move = time.monotonic()
             self.rect.center = self.rect.center + self.towards
+
+        if self.last_hailed != 0 and ((time.monotonic() - self.last_hailed) > constants.HAIL_DELAY + self.replies):
+            self.last_hailed = 0
+            self.replies += 3
+            print(self.replies)
+            return True
 
         if (time.monotonic() - self.last_sound) > self.time_to_next_sound:
             self.last_sound = time.monotonic()
@@ -153,6 +162,8 @@ class Contact(pygame.sprite.Sprite):
 
     def heard(self, arc_gen):
         """Process sound and change heading and speed accordingly."""
+        if arc_gen.originator == self:
+            return None
         # heard_type = arc_gen.originator.type
         heard_type = arc_gen.arc_type.split('_')[0]
         # logger.debug(f"{self} heard {heard_type}")
@@ -176,6 +187,7 @@ class Contact(pygame.sprite.Sprite):
             direction = (sound_vector - con_vector)
             if direction.length() != 0:
                 self.towards = direction.normalize() * self.speed
+            self.last_hailed = time.monotonic()
             #     logger.debug(
             #         f"{self.type} chasing {heard_type} noise from {arc_gen.originator.type} in direction: {self.towards}")
             # else:
