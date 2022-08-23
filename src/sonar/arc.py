@@ -1,4 +1,5 @@
 import math
+import time
 from random import randint, choice, choices
 from loguru import logger
 import pygame
@@ -59,6 +60,13 @@ class ArcMgr:
         self.listener.rect.width = 100
         self.listener.rect.height = 100
         self.listener.radius = 50
+        self.num_contacts = randint(
+            constants.MIN_NUM_CON, constants.MAX_NUM_CON)
+        self.time_to_next_con = randint(
+            constants.MIN_TIME_BTWN_CON, constants.MAX_TIME_BTWN_CON)
+        self.time_of_last_con = time.monotonic()
+        logger.debug(f"num_contacts = {self.num_contacts}")
+        logger.debug(f"time_to_next_con = {self.time_to_next_con}")
 
     def rand_contact(self):
         angle = randint(0, 359)
@@ -205,9 +213,9 @@ class ArcMgr:
             for con in collide:
                 if con not in arc_gen.contacts:
                     con.heard(arc_gen)
-                    logger.debug(
-                        f"Arc of type {arc_gen.arc_type} collided contact w tags {arc_gen.tags}")
-                    if arc_gen.arc_type in {'ping', 'ping_a', 'ping_b',} and not arc_gen.silent: 
+                    # logger.debug(
+                    #     f"Arc of type {arc_gen.arc_type} collided contact w tags {arc_gen.tags}")
+                    if arc_gen.arc_type in {'ping', 'ping_a', 'ping_b', } and not arc_gen.silent:
                         self.arcs.extend(
                             self.arc_to_center_from_xy(
                                 con,
@@ -235,6 +243,16 @@ class ArcMgr:
                 self.listener.heard(arc_gen)
 
     def draw(self):
+        if (len(self.contacts) < self.num_contacts) and ((time.monotonic() - self.time_of_last_con) > self.time_to_next_con):
+            self.rand_contact()
+            self.num_contacts = randint(
+                constants.MIN_NUM_CON, constants.MAX_NUM_CON)
+            self.time_to_next_con = randint(
+                constants.MIN_TIME_BTWN_CON, constants.MAX_TIME_BTWN_CON)
+            self.time_of_last_con = time.monotonic()
+            logger.debug(f"num_contacts = {self.num_contacts}")
+            logger.debug(f"time_to_next_con = {self.time_to_next_con}")
+
         if self.arcs:
             for arc in self.arcs:
                 try:
@@ -245,12 +263,12 @@ class ArcMgr:
             self.pinging = False
         for con in self.contacts:
             if con.update():
-                logger.debug(f"Time for {con.type} to make some noise")
+                # logger.debug(f"Time for {con.type} to make some noise")
                 if rand_sound := snd.sounds[con.type +
                                             choice(['_hi', '_food', '_danger', '_love'])]:
                     pygame.mixer.Sound.play(rand_sound)
                     self.arcs.extend(self.arcs_from_xy(
-                     con, con.rect.centerx, con.rect.centery, constants.RED, f"{con.type}_hi"))
+                        con, con.rect.centerx, con.rect.centery, constants.RED, f"{con.type}_hi"))
                     con.alpha = 255
                     con.last_known_x = con.rect.x
                     con.last_known_y = con.rect.y

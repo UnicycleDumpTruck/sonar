@@ -155,7 +155,7 @@ class Contact(pygame.sprite.Sprite):
         """Process sound and change heading and speed accordingly."""
         # heard_type = arc_gen.originator.type
         heard_type = arc_gen.arc_type.split('_')[0]
-        logger.debug(f"{self} heard {heard_type}")
+        # logger.debug(f"{self} heard {heard_type}")
         if heard_type in Contact.foes[self.type]:
             con_vector = pygame.Vector2(self.rect.center)
             sound_vector = pygame.Vector2(
@@ -163,11 +163,11 @@ class Contact(pygame.sprite.Sprite):
             direction = (con_vector - sound_vector)
             if direction.length() != 0:
                 self.towards = direction.normalize() * self.speed
-                logger.debug(
-                    f"{self.type} fleeing {heard_type} noise from {arc_gen.originator.type} in direction: {self.towards}")
-            else:
-                logger.warning(
-                    f"Direction vector == 0. {self.type} on top of {arc_gen.originator.type}.")
+                # logger.debug(
+                #     f"{self.type} fleeing {heard_type} noise from {arc_gen.originator.type} in direction: {self.towards}")
+            # else:
+            #     logger.warning(
+            #         f"Direction vector == 0. {self.type} on top of {arc_gen.originator.type}.")
 
         if heard_type in Contact.friends[self.type]:
             con_vector = pygame.Vector2(self.rect.center)
@@ -176,15 +176,15 @@ class Contact(pygame.sprite.Sprite):
             direction = (sound_vector - con_vector)
             if direction.length() != 0:
                 self.towards = direction.normalize() * self.speed
-                logger.debug(
-                    f"{self.type} chasing {heard_type} noise from {arc_gen.originator.type} in direction: {self.towards}")
-            else:
-                logger.warning(
-                    f"Direction vector == 0. {self.type} on top of {arc_gen.originator.type}.")
+            #     logger.debug(
+            #         f"{self.type} chasing {heard_type} noise from {arc_gen.originator.type} in direction: {self.towards}")
+            # else:
+            #     logger.warning(
+            #         f"Direction vector == 0. {self.type} on top of {arc_gen.originator.type}.")
 
-        else:
-            logger.debug(
-                f"{self.type} heard {heard_type} from {arc_gen.originator.type} noise but doesn't care.")
+        # else:
+        #     logger.debug(
+        #         f"{self.type} heard {heard_type} from {arc_gen.originator.type} noise but doesn't care.")
 
     def __repr__(self):
         return f"{self.type} centered at x:{self.rect.centerx} y:{self.rect.centery}, towards:{self.towards}"

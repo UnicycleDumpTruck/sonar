@@ -26,7 +26,8 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-HRETL = pygame.Rect(SCREEN_WIDTH - BOX + RWT, HBOX - RWT / 2, BOX - (RWT * 2), RWT)
+HRETL = pygame.Rect(SCREEN_WIDTH - BOX + RWT, HBOX -
+                    RWT / 2, BOX - (RWT * 2), RWT)
 VRETL = pygame.Rect(HX - RWT / 2, RWT, RWT, BOX - (RWT * 2))
 TOP_SPEED = 10
 RANGE = HBOX + (75 / 2)  # Range outside of which to delete contact
@@ -35,3 +36,8 @@ SUB_LOCATION = (HX - 50, HBOX - 40)
 
 ANIMALS = ('orca', 'beluga', 'whale', 'seal',)
 MESSAGES = ('hi', 'love', 'food', 'danger',)
+
+MIN_TIME_BTWN_CON = 10
+MAX_TIME_BTWN_CON = 60
+MIN_NUM_CON = 1
+MAX_NUM_CON = 4
