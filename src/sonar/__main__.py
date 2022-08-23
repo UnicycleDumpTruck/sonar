@@ -57,7 +57,8 @@ def main() -> None:
     if ON_RPI:
         screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     else:
-        screen = pygame.display.set_mode([constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT])
+        screen = pygame.display.set_mode(
+            [constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT])
     arc_mgr = arc.ArcMgr(screen)
     pygame.mouse.set_visible(False)
     # Run until quit
@@ -72,14 +73,14 @@ def main() -> None:
                 elif change[0] == 9:
                     start_ping(arc_mgr, constants.RED)
                 else:
-                        sound_from(
-                            arc_mgr,
-                            arc_mgr.listener,
-                            constants.BLUE,
-                            constants.ANIMALS[change[0]]
-                            + "_"
-                            + constants.MESSAGES[change[1]],
-                        )
+                    sound_from(
+                        arc_mgr,
+                        arc_mgr.listener,
+                        constants.BLUE,
+                        constants.ANIMALS[change[0]]
+                        + "_"
+                        + constants.MESSAGES[change[1]],
+                    )
                 # TODO: incorporate pings into sound_from() so all these call the same.
 
         for event in pygame.event.get():
@@ -95,15 +96,20 @@ def main() -> None:
                     arc_mgr.rand_contact()
 
                 if event.key == pygame.K_b:
-                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, "beluga_hi")
+                    sound_from(arc_mgr, arc_mgr.listener,
+                               constants.BLUE, "beluga_hi")
                 if event.key == pygame.K_n:
-                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, "narwhal_hi")
+                    sound_from(arc_mgr, arc_mgr.listener,
+                               constants.BLUE, "narwhal_hi")
                 if event.key == pygame.K_o:
-                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, "orca_hi")
+                    sound_from(arc_mgr, arc_mgr.listener,
+                               constants.BLUE, "orca_hi")
                 if event.key == pygame.K_s:
-                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, "ship_hi")
+                    sound_from(arc_mgr, arc_mgr.listener,
+                               constants.BLUE, "ship_hi")
                 if event.key == pygame.K_w:
-                    sound_from(arc_mgr, arc_mgr.listener, constants.BLUE, "whale_hi")
+                    sound_from(arc_mgr, arc_mgr.listener,
+                               constants.BLUE, "whale_hi")
 
                 if event.key == pygame.K_ESCAPE:
                     running = False
@@ -142,7 +148,8 @@ def draw_reticle(scrn):
     pygame.draw.rect(scrn, constants.WHITE, constants.VRETL)
 
     # Central Blanking circle
-    pygame.draw.circle(scrn, constants.BG_BLUE, constants.CENTER, 60)  # RCNT + RWT)
+    pygame.draw.circle(scrn, constants.BG_BLUE,
+                       constants.CENTER, 60)  # RCNT + RWT)
 
     # Central circle
     # pygame.draw.circle(scrn, WHITE, CENTER, RCNT)

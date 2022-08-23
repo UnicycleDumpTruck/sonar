@@ -3,20 +3,12 @@ import pygame
 pygame.mixer.pre_init(44100, -16, 1, 256)
 pygame.mixer.init()
 
-# ping = pygame.mixer.Sound("../../sounds/high_ping.wav")
-# r_ping = pygame.mixer.Sound("../../sounds/high_ping.wav")
-# g_ping = pygame.mixer.Sound("../../sounds/high_ping.wav")
-# b_ping = pygame.mixer.Sound("../../sounds/high_ping.wav")
-
 sounds = {
 
     'ping_a': pygame.mixer.Sound("../../sounds/high_ping.wav"),
-    # TODO: Replace
-    'ping_a_echo': pygame.mixer.Sound("../../sounds/high_ping.wav"),
-    # TODO: Replace
-    'ping_b': pygame.mixer.Sound("../../sounds/high_ping.wav"),
-    # TODO: Replace
-    'ping_b_echo': pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    'ping_a_echo': pygame.mixer.Sound("../../sounds/high_ping_echo.wav"),
+    'ping_b': pygame.mixer.Sound("../../sounds/low_ping.wav"),
+    'ping_b_echo': pygame.mixer.Sound("../../sounds/low_ping_echo.wav"),
 
     # "dolphin_hi": pygame.mixer.Sound("../../sounds/high_ping.wav"),
     # "dolphin_love": pygame.mixer.Sound("../../sounds/high_ping.wav"),
@@ -53,12 +45,12 @@ sounds = {
     "shark_food": None,
     "shark_danger": None,
 
-    "ship_hi": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "ship_hi": pygame.mixer.Sound("../../sounds/foreign_ping.wav"),
     "ship_love": None,
     "ship_food": None,
     "ship_danger": None,
 
-    "sub_hi": pygame.mixer.Sound("../../sounds/high_ping.wav"),
+    "sub_hi": pygame.mixer.Sound("../../sounds/foreign_ping.wav"),
     "sub_love": None,
     "sub_food": None,
     "sub_danger": None,

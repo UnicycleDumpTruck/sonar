@@ -268,7 +268,7 @@ class ArcMgr:
                                             choice(['_hi', '_food', '_danger', '_love'])]:
                     pygame.mixer.Sound.play(rand_sound)
                     self.arcs.extend(self.arcs_from_xy(
-                        con, con.rect.centerx, con.rect.centery, constants.RED, f"{con.type}_hi"))
+                        con, con.rect.centerx, con.rect.centery, constants.BLUE, f"{con.type}_hi"))
                     con.alpha = 255
                     con.last_known_x = con.rect.x
                     con.last_known_y = con.rect.y
