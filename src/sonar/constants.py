@@ -16,7 +16,7 @@ HX = SCREEN_WIDTH - HBOX
 HY = HBOX
 CENTER = (HX, HY)  # Center of box
 ABOXL = int(HBOX * 1)  # Arc box limit so they leave screen
-RWT = 2  # Reticle line weight
+RWT = 4  # Reticle line weight
 ARC_SPEED = 4
 AWT = 8  # Arc line weight
 RCNT = 20  # Center circle diameter
@@ -30,7 +30,7 @@ HRETL = pygame.Rect(SCREEN_WIDTH - BOX + RWT, HBOX -
                     RWT / 2, BOX - (RWT * 2), RWT)
 VRETL = pygame.Rect(HX - RWT / 2, RWT, RWT, BOX - (RWT * 2))
 TOP_SPEED = 10
-RANGE = HBOX + (75 / 2)  # Range outside of which to delete contact
+RANGE = HBOX # + (75 / 2)  # Range outside of which to delete contact
 SUB_ICON = pygame.image.load("../../images/big_sub.png")
 SUB_LOCATION = (HX - 50, HBOX - 40)
 

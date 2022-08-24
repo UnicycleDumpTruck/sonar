@@ -150,13 +150,14 @@ class Contact(pygame.sprite.Sprite):
 
         if self.last_hailed != 0 and ((time.monotonic() - self.last_hailed) > constants.HAIL_DELAY + self.replies):
             self.last_hailed = 0
-            self.replies += 3
-            print(self.replies)
+            self.replies += randint(20,30)
+            logger.debug(f"{self.type} reply, reply counter: {self.replies}")
             return True
 
-        if (time.monotonic() - self.last_sound) > self.time_to_next_sound:
+        if ((time.monotonic() - self.last_sound) > self.time_to_next_sound) and not self.last_hailed:
             self.last_sound = time.monotonic()
-            self.time_to_next_sound = randint(16, 60)
+            self.time_to_next_sound = randint(30, 120)
+            logger.debug(f"{self} randomly making a sound.")
             return True
         return False
 
