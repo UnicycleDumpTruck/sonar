@@ -150,7 +150,7 @@ class Contact(pygame.sprite.Sprite):
 
         if self.last_hailed != 0 and ((time.monotonic() - self.last_hailed) > constants.HAIL_DELAY + self.replies):
             self.last_hailed = 0
-            self.replies += randint(20,30)
+            self.replies += randint(20, 30)
             logger.debug(f"{self.type} reply, reply counter: {self.replies}")
             return True
 
@@ -200,4 +200,4 @@ class Contact(pygame.sprite.Sprite):
         #         f"{self.type} heard {heard_type} from {arc_gen.originator.type} noise but doesn't care.")
 
     def __repr__(self):
-        return f"{self.type} centered at x:{self.rect.centerx} y:{self.rect.centery}, towards:{self.towards}"
+        return f"{self.type} x{self.rect.centerx}y{self.rect.centery} t:{self.towards}"
