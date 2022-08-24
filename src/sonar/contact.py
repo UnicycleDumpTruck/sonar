@@ -154,11 +154,11 @@ class Contact(pygame.sprite.Sprite):
             logger.debug(f"{self.type} reply, reply counter: {self.replies}")
             return True
 
-        if ((time.monotonic() - self.last_sound) > self.time_to_next_sound) and not self.last_hailed:
+        if (time.monotonic() - self.last_sound) > self.time_to_next_sound and not self.last_hailed:
             self.last_sound = time.monotonic()
-            self.time_to_next_sound = randint(30, 120)
-            logger.debug(f"{self} randomly making a sound.")
+            self.time_to_next_sound = randint(16, 60)
             return True
+
         return False
 
     def heard(self, arc_gen):
