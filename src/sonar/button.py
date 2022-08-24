@@ -54,17 +54,17 @@ class ButtonMgr():
         pin7.pull = Pull.UP
         but7 = Debouncer(pin7)
 
-        pinGrn = DigitalInOut(board.D23)
-        butGrn = Debouncer(pinGrn)
-
-        pinRed = DigitalInOut(board.D24)
+        pinRed = DigitalInOut(board.D23)
         butRed = Debouncer(pinRed)
 
-        GreenLed = DigitalInOut(board.D18)
-        GreenLed.direction = Direction.OUTPUT
+        pinGrn = DigitalInOut(board.D24)
+        butGrn = Debouncer(pinGrn)
 
-        RedLed = DigitalInOut(board.D25)
+        RedLed = DigitalInOut(board.D18)
         RedLed.direction = Direction.OUTPUT
+
+        GreenLed = DigitalInOut(board.D25)
+        GreenLed.direction = Direction.OUTPUT
 
         # Pins 8-15 on the left side of the MCP23017
         pin8 = mcp.get_pin(pin=8)
@@ -113,8 +113,8 @@ class ButtonMgr():
             button.update()
             if button.fell:
                 led.value = True
-                logger.debug(f"Message ({self.animal_selection}, {number})")
-                changes.append((self.animal_selection, number))
+                logger.debug(f"Message ({self.animal_selection}, {number - 4})")
+                changes.append((self.animal_selection, number - 4))
             if button.rose:
                 led.value = False
         for button, led, number in self.animal_buttons:
