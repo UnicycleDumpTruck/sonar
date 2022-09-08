@@ -29,15 +29,15 @@ con_weights = (
 )
 
 con_image_filenames = {
-    'unknown': "../../images/question.png",
-    'ship': "../../images/ship.png",
-    'sub': "../../images/sub.png",
-    'whale': "../../images/whale.png",
+    'unknown': "/home/exhibits/sonar/images/question.png",
+    'ship': "/home/exhibits/sonar/images/ship.png",
+    'sub': "/home/exhibits/sonar/images/sub.png",
+    'whale': "/home/exhibits/sonar/images/whale.png",
     # 'dolphin': "../../images/dolphin.png",
-    'shark': "../../images/shark.png",
-    'narwhal': "../../images/narwhal.png",
-    'orca': "../../images/orca.png",
-    'seal': "../../images/seal.png",
+    'shark': "/home/exhibits/sonar/images/shark.png",
+    'narwhal': "/home/exhibits/sonar/images/narwhal.png",
+    'orca': "/home/exhibits/sonar/images/orca.png",
+    'seal': "/home/exhibits/sonar/images/seal.png",
 }
 
 

@@ -1,7 +1,8 @@
 import pygame
 from os import path
 
-pygame.mixer.pre_init(44100, -16, 1, 256)
+pygame.mixer.pre_init(44100, -16, 1, 1024)
+#pygame.mixer.pre_init(44100, -16, 1, 256)
 pygame.mixer.init()
 
 parent_dir = path.dirname(path.dirname(path.dirname(__file__)))

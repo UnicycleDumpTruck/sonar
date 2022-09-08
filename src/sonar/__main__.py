@@ -32,8 +32,13 @@ import snd
 
 install(show_locals=True)
 
+os.environ['SDL_VIDEODRIVER'] = 'fbcon'
+os.environ["SDL_FBDEV"] = "/dev/fb0"
+
 architecture = uname()[4][:3]
 print(f"                      Running on architecture: {architecture}")
+
+
 if architecture.lower() in {"aar", "arm"}:
     import button
 
