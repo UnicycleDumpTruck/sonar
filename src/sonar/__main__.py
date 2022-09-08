@@ -69,9 +69,9 @@ def main() -> None:
             button_presses = btn_mgr.update()
             for change in button_presses:
                 if change[0] == 8:
-                    start_ping(arc_mgr, constants.GREEN)
+                    start_ping(arc_mgr, constants.GREEN, 'ping_b')
                 elif change[0] == 9:
-                    start_ping(arc_mgr, constants.RED)
+                    start_ping(arc_mgr, constants.RED, 'ping_a')
                 else:
                     sound_from(
                         arc_mgr,
