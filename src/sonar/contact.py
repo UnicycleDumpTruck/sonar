@@ -36,7 +36,8 @@ con_image_filenames = {
     # 'dolphin': "../../images/dolphin.png",
     'shark': "../../images/shark.png",
     'narwhal': "../../images/narwhal.png",
-    'orca': "../../images/whale.png"
+    'orca': "../../images/orca.png",
+    'seal': "../../images/seal.png",
 }
 
 
@@ -53,6 +54,7 @@ class Contact(pygame.sprite.Sprite):
             'sub',
             'narwhal',
             'orca',
+            'seal',
         ],
         'sub': [
             'ship',
@@ -62,6 +64,7 @@ class Contact(pygame.sprite.Sprite):
             'whale',
             'narwhal',
             'orca',
+            'seal',
         ],
         'whale': [
             'whale',
@@ -87,7 +90,10 @@ class Contact(pygame.sprite.Sprite):
         'orca': [
             'orca',
             # 'sub',
-        ]
+        ],
+        'seal': [
+            'seal',
+        ],
     }
 
     # Values are what the key will flee:
@@ -111,6 +117,9 @@ class Contact(pygame.sprite.Sprite):
         ],
         'orca': [
             'orca'
+        ],
+        'seal': [
+            'ship'
         ],
     }
 
