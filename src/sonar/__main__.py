@@ -33,8 +33,8 @@ import snd
 install(show_locals=True)
 
 architecture = uname()[4][:3]
-print(f"Running on architecture: {architecture}")
-if architecture.lower() == "aar":
+print(f"                      Running on architecture: {architecture}")
+if architecture.lower() in {"aar", "arm"}:
     import button
 
     ON_RPI = True
