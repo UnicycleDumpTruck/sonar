@@ -20,10 +20,10 @@ sounds = {
     # "dolphin_food": pygame.mixer.Sound("../../sounds/high_ping.wav"),
     # "dolphin_danger": pygame.mixer.Sound("../../sounds/high_ping.wav"),
 
-    "beluga_hi": pygame.mixer.Sound(f"{sound_dir}/beluga_hi.wav"),
-    "beluga_love": pygame.mixer.Sound(f"{sound_dir}/beluga_love.wav"),
-    "beluga_food": pygame.mixer.Sound(f"{sound_dir}/beluga_food.wav"),
-    "beluga_danger": pygame.mixer.Sound(f"{sound_dir}/beluga_danger.wav"),
+    # "beluga_hi": pygame.mixer.Sound(f"{sound_dir}/beluga_hi.wav"),
+    # "beluga_love": pygame.mixer.Sound(f"{sound_dir}/beluga_love.wav"),
+    # "beluga_food": pygame.mixer.Sound(f"{sound_dir}/beluga_food.wav"),
+    # "beluga_danger": pygame.mixer.Sound(f"{sound_dir}/beluga_danger.wav"),
 
     "whale_hi": pygame.mixer.Sound(f"{sound_dir}/whale_hi.wav"),
     "whale_love": pygame.mixer.Sound(f"{sound_dir}/whale_love.wav"),

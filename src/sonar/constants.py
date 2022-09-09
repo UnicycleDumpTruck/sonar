@@ -32,9 +32,9 @@ VRETL = pygame.Rect(HX - RWT / 2, RWT, RWT, BOX - (RWT * 2))
 TOP_SPEED = 10
 RANGE = HBOX # + (75 / 2)  # Range outside of which to delete contact
 SUB_ICON = pygame.image.load("/home/exhibits/sonar/images/big_sub.png")
-SUB_LOCATION = (HX - 50, HBOX - 40)
+SUB_LOCATION = (HX - 50, HBOX - 54)
 
-ANIMALS = ('orca', 'beluga', 'whale', 'seal',)
+ANIMALS = ('orca', 'narwhal', 'whale', 'seal',)
 MESSAGES = ('hi', 'love', 'food', 'danger',)
 
 MIN_TIME_BTWN_CON = 10

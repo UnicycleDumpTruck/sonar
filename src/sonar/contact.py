@@ -11,7 +11,6 @@ con_types = (
     'sub',
     'ship',
     'whale',
-    # 'dolphin',
     'shark',
     'narwhal',
     'orca',
@@ -22,7 +21,6 @@ con_weights = (
     5,  # SUB
     5,  # SHIP
     12,  # WHALE
-    # 15,  # DOLPHIN
     10,  # SHARK
     10,  # NARWHAL
     12,  # ORCA
@@ -33,7 +31,6 @@ con_image_filenames = {
     'ship': "/home/exhibits/sonar/images/ship.png",
     'sub': "/home/exhibits/sonar/images/sub.png",
     'whale': "/home/exhibits/sonar/images/whale.png",
-    # 'dolphin': "../../images/dolphin.png",
     'shark': "/home/exhibits/sonar/images/shark.png",
     'narwhal': "/home/exhibits/sonar/images/narwhal.png",
     'orca': "/home/exhibits/sonar/images/orca.png",
@@ -48,7 +45,6 @@ class Contact(pygame.sprite.Sprite):
     friends = {
         'unknown': [],
         'ship': [
-            'dolphin',
             'whale',
             'shark',
             'sub',
@@ -59,7 +55,6 @@ class Contact(pygame.sprite.Sprite):
         'sub': [
             'ship',
             'sub',
-            'dolphin',
             'shark',
             'whale',
             'narwhal',
@@ -70,13 +65,6 @@ class Contact(pygame.sprite.Sprite):
             'whale',
             'orca',
             'dolphin',
-            # 'sub',
-        ],
-        'dolphin': [
-            'dolphin',
-            'orca',
-            'narwhal',
-            'ship',
             # 'sub',
         ],
         'shark': [
@@ -99,9 +87,6 @@ class Contact(pygame.sprite.Sprite):
     # Values are what the key will flee:
     foes = {
         'unknown': [],
-        'dolphin': [
-            'shark',
-        ],
         'ship': [],
         'whale': [
             'shark',
@@ -113,10 +98,10 @@ class Contact(pygame.sprite.Sprite):
             'dolphin'
         ],
         'narwhal': [
-            'narwhal'
+            'shark'
         ],
         'orca': [
-            'orca'
+            'shark'
         ],
         'seal': [
             'ship'
