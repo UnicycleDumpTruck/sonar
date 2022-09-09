@@ -35,12 +35,12 @@ sounds = {
     "narwhal_food": pygame.mixer.Sound(f"{sound_dir}/narwhal_food.wav"),
     "narwhal_danger": pygame.mixer.Sound(f"{sound_dir}/narwhal_danger.wav"),
 
-    "orca_hi": pygame.mixer.Sound(f"{sound_dir}/orca_love.wav"),
+    "orca_hi": pygame.mixer.Sound(f"{sound_dir}/beluga_hi.wav"),
     "orca_love": pygame.mixer.Sound(f"{sound_dir}/orca_love.wav"),
     "orca_food": pygame.mixer.Sound(f"{sound_dir}/orca_food.wav"),
     "orca_danger": pygame.mixer.Sound(f"{sound_dir}/orca_danger.wav"),
 
-    "seal_hi": pygame.mixer.Sound(f"{sound_dir}/seal_love.wav"),
+    "seal_hi": pygame.mixer.Sound(f"{sound_dir}/seal_hi.wav"),
     "seal_love": pygame.mixer.Sound(f"{sound_dir}/seal_love.wav"),
     "seal_food": pygame.mixer.Sound(f"{sound_dir}/seal_food.wav"),
     "seal_danger": pygame.mixer.Sound(f"{sound_dir}/seal_danger.wav"),
